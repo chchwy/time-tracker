@@ -28,6 +28,14 @@ class CategoryRepositoryImpl @Inject constructor(
         return categoryDao.insertCategory(category.toEntity())
     }
 
+    override suspend fun updateCategory(category: Category) {
+        categoryDao.updateCategory(category.toEntity())
+    }
+
+    override suspend fun deleteCategory(category: Category) {
+        categoryDao.deleteCategory(category.toEntity())
+    }
+
     private fun CategoryEntity.toDomain(): Category {
         return Category(
             id = id,

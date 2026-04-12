@@ -31,6 +31,9 @@ fun AppNavGraph() {
                 RecordListScreen(
                     onRecordClick = { recordId ->
                         navController.navigate("edit_record/$recordId")
+                    },
+                    onNavigateToSettings = {
+                        navController.navigate(Screen.Settings.route)
                     }
                 )
             }
@@ -63,6 +66,9 @@ fun AppNavGraph() {
             }
             composable(Screen.Analytics.route) {
                 AnalyticsScreen()
+            }
+            composable(Screen.Settings.route) {
+                com.mattchang.timetracker.ui.settings.SettingsScreen()
             }
         }
     }

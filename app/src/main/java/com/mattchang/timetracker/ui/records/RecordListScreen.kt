@@ -19,9 +19,14 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,6 +48,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun RecordListScreen(
     onRecordClick: (Long) -> Unit = {},
+    onNavigateToSettings: () -> Unit = {},
     viewModel: RecordListViewModel = hiltViewModel()
 ) {
     val records by viewModel.records.collectAsStateWithLifecycle()
@@ -58,44 +64,55 @@ fun RecordListScreen(
             .toSortedMap(compareByDescending { it })
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (records.isEmpty()) {
-            EmptyState()
-        } else {
-            val dateFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd (E)")
-
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                groupedRecords.forEach { (date, dayRecords) ->
-                    item(key = "header_$date") {
-                        DateHeader(date = date, formatter = dateFormatter)
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text(stringResource(R.string.app_name)) },
+                actions = {
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(Icons.Default.Settings, contentDescription = "Settings")
                     }
+                }
+            )
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        }
+    ) { paddingValues ->
+        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+            if (records.isEmpty()) {
+                EmptyState()
+            } else {
+                val dateFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd (E)")
 
-                    items(dayRecords, key = { it.id }) { record ->
-                        SwipeToDismissItem(
-                            record = record,
-                            categoryMap = categoryMap,
-                            onClick = { onRecordClick(record.id) },
-                            onDelete = {
-                                viewModel.deleteRecord(record)
-                            },
-                            snackbarHostState = snackbarHostState,
-                            deleteText = deleteText,
-                            undoText = undoText
-                        )
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    groupedRecords.forEach { (date, dayRecords) ->
+                        item(key = "header_$date") {
+                            DateHeader(date = date, formatter = dateFormatter)
+                        }
+
+                        items(dayRecords, key = { it.id }) { record ->
+                            SwipeToDismissItem(
+                                record = record,
+                                categoryMap = categoryMap,
+                                onClick = { onRecordClick(record.id) },
+                                onDelete = {
+                                    viewModel.deleteRecord(record)
+                                },
+                                snackbarHostState = snackbarHostState,
+                                deleteText = deleteText,
+                                undoText = undoText
+                            )
+                        }
                     }
                 }
             }
         }
-
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
     }
 }
 
