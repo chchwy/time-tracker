@@ -51,39 +51,41 @@ fun DateTimeField(
     Column(modifier = modifier) {
         // Wrap in Box so the clickable overlay sits on top of the readOnly TextField
         // (readOnly=true causes OutlinedTextField to swallow touch events, breaking .clickable)
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { showDatePicker = true }
-        ) {
+        // Use a transparent Box overlay on top of the TextField to intercept clicks.
+        // This avoids setting enabled=false, which makes the text look grayed-out.
+        Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
                 value = dateTime.format(dateFormatter),
                 onValueChange = {},
                 label = { Text(label) },
                 readOnly = true,
-                enabled = false,
                 trailingIcon = {
                     Icon(Icons.Default.CalendarToday, contentDescription = null)
                 },
                 modifier = Modifier.fillMaxWidth()
             )
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .clickable { showDatePicker = true }
+            )
         }
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { showTimePicker = true }
-        ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
                 value = dateTime.format(timeFormatter),
                 onValueChange = {},
                 label = { Text(stringResource(R.string.time)) },
                 readOnly = true,
-                enabled = false,
                 trailingIcon = {
                     Icon(Icons.Default.AccessTime, contentDescription = null)
                 },
                 modifier = Modifier.fillMaxWidth()
+            )
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .clickable { showTimePicker = true }
             )
         }
     }
