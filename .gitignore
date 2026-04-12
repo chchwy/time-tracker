@@ -1,12 +1,67 @@
+# ============================================================
+# Android
+# ============================================================
 *.iml
-.gradle
-/local.properties
-/.idea
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+.gradle/
 local.properties
-/app/build
-/app/schemas
+/build/
+/app/build/
+/captures/
+.externalNativeBuild/
+.cxx/
+
+# Generated signed APK / AAB
+*.apk
+*.aab
+*.ap_
+
+# Proguard mapping (keep if you need crash symbolication)
+# /app/mapping/
+
+# Room schema exports (optional: commit if you want migration history)
+/app/schemas/
+
+# ============================================================
+# Kotlin / JVM
+# ============================================================
+*.class
+*.jar
+*.war
+*.ear
+bin/
+out/
+
+# ============================================================
+# IntelliJ IDEA / Android Studio
+# ============================================================
+.idea/
+*.iws
+*.ipr
+.DS_Store
+Thumbs.db
+
+# Gradle wrapper jar is usually committed, but ignore other caches
+.gradle/
+gradle/wrapper/gradle-wrapper.jar
+
+# Keep: gradle/wrapper/gradle-wrapper.properties
+# Keep: gradle/libs.versions.toml
+
+# ============================================================
+# OS files
+# ============================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ============================================================
+# Keystore / secrets (NEVER commit these)
+# ============================================================
+*.jks
+*.keystore
+keystore.properties
+signing.properties
