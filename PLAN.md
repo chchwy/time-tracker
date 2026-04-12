@@ -127,82 +127,99 @@ BUILD SUCCESSFUL in 53s
 
 ---
 
-## Phase 3：碼表計時器（待實作）
+## Phase 3：碼表計時器 ✅
 
 **目標**：使用者可以按「開始」計時，按「停止」自動建立一筆時間紀錄。
 
-### 計畫項目
+### 完成項目
 
 1. **`TimerScreen`**
-   - 大型數字計時顯示（HH:MM:SS）
-   - 分類選擇器（橫向捲動 Chips）
+   - 大型 monospace 計時顯示（HH:MM:SS），顏色動畫
+   - 頁面可捲動，分類選擇器（橫向 LazyRow）
    - 標籤多選
-   - 大按鈕：開始 / 停止
+   - 圓形大按鈕：開始（藍）/ 停止（紅），帶縮放動畫
 
 2. **`TimerViewModel`**
-   - 用 Coroutine 每秒更新計時器 `StateFlow`
-   - 記錄 `startTime = System.currentTimeMillis()`
-   - 停止時計算 duration，呼叫 `AddRecordUseCase` 建立紀錄
-   - 用 `SavedStateHandle` 保存計時狀態，避免螢幕旋轉遺失
+   - Coroutine 每秒更新 `elapsedSeconds` StateFlow
+   - `SavedStateHandle` 保存 `startEpochMillis`，螢幕旋轉不遺失
+   - 停止時計算 duration，呼叫 repository 建立紀錄
+   - `RecordCreated` 事件帶 recordId，可跳轉編輯頁
 
 3. **停止後確認流程**
-   - 停止計時 → 顯示確認 Snackbar（「已建立 X 分鐘的紀錄」）
-   - 可選擇跳到紀錄編輯頁補充分類/標籤
+   - Snackbar 顯示「已建立 X 分鐘的紀錄」
+   - Action 按鈕跳到紀錄編輯頁補充分類/標籤
 
-4. **（進階）前景服務**
+4. **前景服務**
    - `TimerForegroundService`：App 切換到背景後計時繼續
-   - 通知列顯示當前計時時間
+   - 通知列顯示當前計時時間（每秒更新）
+   - Android 14+ specialUse foreground service type
+
+### 驗證
+```
+BUILD SUCCESSFUL in 21s
+```
 
 ---
 
-## Phase 4：睡眠追蹤（待實作）
+## Phase 4：睡眠追蹤 ✅
 
 **目標**：專屬睡眠紀錄表單，追蹤睡眠品質與睡前習慣。
 
-### 計畫項目
+### 完成項目
 
-1. **`SleepScreen`**
-   - 入睡時間、起床時間選擇器
-   - Toggle 開關：半夜小孩干擾、睡前開電腦、睡前讀書、跟老婆聊天
-   - 文字輸入：熬夜原因（選填）
-   - Slider：起床能量指數 1–10
-   - 儲存後自動設定 `type = SLEEP`、`categoryId` = 睡眠分類
+1. **`SleepScreen`（雙 Tab）**
+   - Tab 1「記錄睡眠」：DateTimeField 時間選擇、睡眠時長即時顯示
+   - 起床能量指數 Slider（1–10，顏色隨分數變化）
+   - 睡前習慣 Toggle（讀書、聊天、電腦、小孩干擾），帶背景色動畫
+   - 熬夜原因文字輸入
+   - Tab 2「睡眠歷史」：快速洞察卡 + 歷史列表（emoji 習慣指標）
 
-2. **睡眠歷史**
-   - 最近睡眠紀錄列表，顯示睡眠時長 + 習慣指標 icon
-   - 在紀錄清單中有月亮 icon 區別睡眠紀錄
+2. **`SleepViewModel`**
+   - `getSleepRecords()` 流，自動找 bedtime 分類儲存
+   - 洞察計算：本週平均睡眠時長、平均起床能量、連續讀書天數 streak
 
 3. **快速洞察**
    - 本週平均睡眠時長
    - 平均起床能量
    - 連續讀書天數 streak
 
+### 驗證
+```
+BUILD SUCCESSFUL in 23s
+```
+
 ---
 
-## Phase 5：分析（待實作）
+## Phase 5：分析 ✅
 
 **目標**：圖表化呈現時間分佈，支援日/週/月切換。
 
-### 計畫項目
+### 完成項目
 
-1. 加入 **Vico** 圖表函式庫（Compose-native）
+1. **`AnalyticsViewModel`**
+   - `PeriodType`：DAY / WEEK / MONTH
+   - Reactive pipeline：periodBounds → flatMapLatest → periodRecords
+   - 分類彙總（名稱、顏色、小時數、佔比）
+   - 每日條形資料（DAY→小時分組、WEEK→7天、MONTH→當月每日）
+   - 睡眠分析（期間內平均時長、平均能量、讀書/聊天/未用電腦率）
 
 2. **`AnalyticsScreen`**
-   - 期間選擇器：日 / 週 / 月（SegmentedButton）
-   - 左右箭頭切換日期範圍
-   - **圓餅圖**：各分類時間佔比
-   - **長條圖**：每日時間總量
-   - 彙總卡片：已追蹤總時數、日均時數
+   - `SingleChoiceSegmentedButtonRow` 切換日/週/月
+   - 左右箭頭導航期間
+   - 彙總卡片：已追蹤總時數 / 日均時數
+   - **`BarChart`**（Canvas 自製）：每日時間條形，今日高亮，入場動畫
+   - **`DonutChart`**（Canvas 自製）：分類圓環圖，帶入場動畫 + 圖例
+   - 睡眠分析區塊：平均時長/能量卡片 + 習慣達成率進度條
 
-3. **睡眠分析區塊**
-   - 睡眠時長趨勢折線圖
-   - 平均起床能量指數
-   - 習慣達成率：讀書 %、不開電腦 %、聊天 %
-   - 習慣與能量的相關性提示（例：讀書的夜晚平均能量 7.2 vs 未讀書 5.8）
+3. **圖表元件**（`ui/components/`）
+   - `DonutChart.kt`：Canvas 圓環圖，Animatable 動畫
+   - `BarChart.kt`：Canvas 條形圖，TextMeasurer 標籤，今日高亮
+   - 未使用外部 Vico 依賴，完全原生 Compose Canvas 實作
 
-4. **`AnalyticsViewModel`**
-   - 彙總查詢：`getCategorySummary(from, to)`
-   - 支援 Day / Week / Month 三種時間範圍
+### 驗證
+```
+BUILD SUCCESSFUL in 25s
+```
 
 ---
 
