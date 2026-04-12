@@ -44,6 +44,19 @@
     <string name="chatted_with_wife">有跟老婆聊天</string>
     <string name="stay_up_late_reason">熬夜晚睡原因</string>
     <string name="morning_energy">起床能量指數 (1-10)</string>
+    <string name="morning_energy_label">起床能量指數：%d / 10</string>
+    <string name="sleep_log_tab">記錄睡眠</string>
+    <string name="sleep_history_tab">睡眠歷史</string>
+    <string name="sleep_saved">睡眠紀錄已儲存 ✓</string>
+    <string name="sleep_duration_label">睡眠時長：</string>
+    <string name="habit_toggles">睡前習慣</string>
+    <string name="weekly_avg_sleep">本週平均</string>
+    <string name="avg_morning_energy">平均能量</string>
+    <string name="reading_streak">連續讀書</string>
+    <string name="hours_format">%.1f 小時</string>
+    <string name="days_format">%d 天</string>
+    <string name="no_sleep_records">還沒有睡眠紀錄。\n點擊「記錄睡眠」來新增。</string>
+    <string name="insights_title">快速洞察</string>
 
     <!-- Tags -->
     <string name="add_tag">新增標籤</string>

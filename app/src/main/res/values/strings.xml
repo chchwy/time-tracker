@@ -44,6 +44,19 @@
     <string name="chatted_with_wife">Chatted with wife</string>
     <string name="stay_up_late_reason">Reason for staying up late</string>
     <string name="morning_energy">Morning Energy (1-10)</string>
+    <string name="morning_energy_label">Morning Energy: %d / 10</string>
+    <string name="sleep_log_tab">Log Sleep</string>
+    <string name="sleep_history_tab">History</string>
+    <string name="sleep_saved">Sleep record saved ✓</string>
+    <string name="sleep_duration_label">Sleep duration:</string>
+    <string name="habit_toggles">Bedtime Habits</string>
+    <string name="weekly_avg_sleep">Weekly Avg</string>
+    <string name="avg_morning_energy">Avg Energy</string>
+    <string name="reading_streak">Reading Streak</string>
+    <string name="hours_format">%.1f hrs</string>
+    <string name="days_format">%d days</string>
+    <string name="no_sleep_records">No sleep records yet.\nTap \"Log Sleep\" to add your first.</string>
+    <string name="insights_title">Quick Insights</string>
 
     <!-- Tags -->
     <string name="add_tag">Add Tag</string>
