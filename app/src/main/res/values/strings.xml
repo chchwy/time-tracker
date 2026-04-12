@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Time Tracker</string>
+
+    <!-- Bottom Navigation -->
+    <string name="tab_records">Records</string>
+    <string name="tab_timer">Timer</string>
+    <string name="tab_add">Add</string>
+    <string name="tab_sleep">Sleep</string>
+    <string name="tab_analytics">Analytics</string>
+
+    <!-- Record List -->
+    <string name="empty_records">No records yet.\nTap + to add your first time record.</string>
+
+    <!-- Common -->
+    <string name="coming_soon">Coming Soon</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+
+    <!-- Add Record -->
+    <string name="add_record_title">Add Record</string>
+    <string name="category">Category</string>
+    <string name="tags">Tags</string>
+    <string name="start_time">Start Time</string>
+    <string name="end_time">End Time</string>
+    <string name="duration">Duration</string>
+    <string name="note">Note</string>
+    <string name="title">Title</string>
+
+    <!-- Timer -->
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+
+    <!-- Sleep -->
+    <string name="sleep_time">Sleep Time</string>
+    <string name="wake_time">Wake Time</string>
+    <string name="child_interrupted">Child interrupted sleep</string>
+    <string name="used_computer">Used computer before bed</string>
+    <string name="read_book">Read a book before bed</string>
+    <string name="chatted_with_wife">Chatted with wife</string>
+    <string name="stay_up_late_reason">Reason for staying up late</string>
+    <string name="morning_energy">Morning Energy (1-10)</string>
+
+    <!-- Tags -->
+    <string name="add_tag">Add Tag</string>
+    <string name="tag_name">Tag name</string>
+
+    <!-- DateTime -->
+    <string name="time">Time</string>
+    <string name="edit_record_title">Edit Record</string>
+    <string name="end_before_start_error">End time must be after start time</string>
+    <string name="select_category_error">Please select a category</string>
+    <string name="record_saved">Record saved</string>
+    <string name="record_deleted">Record deleted</string>
+    <string name="undo">Undo</string>
+    <string name="minutes_format">%d min</string>
+
+    <!-- Analytics -->
+    <string name="day">Day</string>
+    <string name="week">Week</string>
+    <string name="month">Month</string>
+</resources>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">時間追蹤</string>
+
+    <!-- Bottom Navigation -->
+    <string name="tab_records">紀錄</string>
+    <string name="tab_timer">計時</string>
+    <string name="tab_add">新增</string>
+    <string name="tab_sleep">睡眠</string>
+    <string name="tab_analytics">分析</string>
+
+    <!-- Record List -->
+    <string name="empty_records">還沒有紀錄。\n點擊 + 新增第一筆時間紀錄。</string>
+
+    <!-- Common -->
+    <string name="coming_soon">即將推出</string>
+    <string name="save">儲存</string>
+    <string name="cancel">取消</string>
+    <string name="delete">刪除</string>
+    <string name="edit">編輯</string>
+
+    <!-- Add Record -->
+    <string name="add_record_title">新增紀錄</string>
+    <string name="category">分類</string>
+    <string name="tags">標籤</string>
+    <string name="start_time">開始時間</string>
+    <string name="end_time">結束時間</string>
+    <string name="duration">時長</string>
+    <string name="note">備註</string>
+    <string name="title">標題</string>
+
+    <!-- Timer -->
+    <string name="start">開始</string>
+    <string name="stop">停止</string>
+
+    <!-- Sleep -->
+    <string name="sleep_time">入睡時間</string>
+    <string name="wake_time">起床時間</string>
+    <string name="child_interrupted">半夜小孩干擾</string>
+    <string name="used_computer">睡前有開電腦</string>
+    <string name="read_book">睡前有讀書</string>
+    <string name="chatted_with_wife">有跟老婆聊天</string>
+    <string name="stay_up_late_reason">熬夜晚睡原因</string>
+    <string name="morning_energy">起床能量指數 (1-10)</string>
+
+    <!-- Tags -->
+    <string name="add_tag">新增標籤</string>
+    <string name="tag_name">標籤名稱</string>
+
+    <!-- DateTime -->
+    <string name="time">時間</string>
+    <string name="edit_record_title">編輯紀錄</string>
+    <string name="end_before_start_error">結束時間必須在開始時間之後</string>
+    <string name="select_category_error">請選擇一個分類</string>
+    <string name="record_saved">紀錄已儲存</string>
+    <string name="record_deleted">紀錄已刪除</string>
+    <string name="undo">復原</string>
+    <string name="minutes_format">%d 分鐘</string>
+
+    <!-- Analytics -->
+    <string name="day">日</string>
+    <string name="week">週</string>
+    <string name="month">月</string>
+</resources>
