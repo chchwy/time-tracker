@@ -158,7 +158,12 @@ fun AnalyticsScreen(
             // ── Bar chart ─────────────────────────────────────────────────
             if (uiState.dailySummary.isNotEmpty()) {
                 item {
-                    SectionCard(title = stringResource(R.string.daily_distribution)) {
+                    val title = if (uiState.periodType == PeriodType.DAY) 
+                        stringResource(R.string.hourly_distribution) 
+                    else 
+                        stringResource(R.string.daily_distribution)
+                        
+                    SectionCard(title = title) {
                         BarChart(
                             entries = uiState.dailySummary,
                             barColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
