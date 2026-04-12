@@ -12,7 +12,9 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -65,17 +67,49 @@ fun BarChart(
             val top = chartHeight - barHeight
 
             if (barHeight > 0f) {
-                drawRoundRect(
-                    color = if (entry.isToday) todayColor else barColor,
-                    topLeft = Offset(left, top),
-                    size = Size(barWidth, barHeight),
-                    cornerRadius = CornerRadius(cornerPx, cornerPx)
-                )
+                if (entry.segments.isEmpty()) {
+                    drawRoundRect(
+                        color = if (entry.isToday) todayColor else barColor,
+                        topLeft = Offset(left, top),
+                        size = Size(barWidth, barHeight),
+                        cornerRadius = CornerRadius(cornerPx, cornerPx)
+                    )
+                } else {
+                    val path = Path().apply {
+                        addRoundRect(
+                            androidx.compose.ui.geometry.RoundRect(
+                                left = left,
+                                top = top,
+                                right = left + barWidth,
+                                bottom = chartHeight,
+                                cornerRadius = CornerRadius(cornerPx, cornerPx)
+                            )
+                        )
+                    }
+                    clipPath(path) {
+                        var currentBottom = chartHeight
+                        entry.segments.forEach { segment ->
+                            val segmentHeight = (chartHeight * (segment.minutes.toFloat() / maxMinutes) * p)
+                            val segColor = try {
+                                Color(android.graphics.Color.parseColor(segment.colorHex))
+                            } catch (_: Exception) {
+                                barColor
+                            }
+                            drawRect(
+                                color = segColor,
+                                topLeft = Offset(left, currentBottom - segmentHeight),
+                                size = Size(barWidth, segmentHeight)
+                            )
+                            currentBottom -= segmentHeight
+                        }
+                    }
+                }
             }
 
             // Label
             if (entry.label.isNotEmpty()) {
-                drawLabel(textMeasurer, entry.label, labelStyle, left + slotWidth / 2f - (slotWidth - barWidth) / 2f, chartHeight + 4.dp.toPx(), barWidth)
+                val style = if (entry.isToday) labelStyle.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, color = todayColor) else labelStyle
+                drawLabel(textMeasurer, entry.label, style, left + barWidth / 2f, chartHeight + 4.dp.toPx(), barWidth)
             }
         }
     }

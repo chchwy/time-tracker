@@ -35,10 +35,16 @@ data class CategorySummaryUi(
     val fraction: Float
 )
 
+data class BarSegment(
+    val minutes: Int,
+    val colorHex: String
+)
+
 data class DailyBarEntry(
     val label: String,
     val date: LocalDate,
     val totalMinutes: Int,
+    val segments: List<BarSegment> = emptyList(),
     val isToday: Boolean = false
 )
 
@@ -127,7 +133,7 @@ class AnalyticsViewModel @Inject constructor(
         }.sortedByDescending { it.totalMinutes }
 
         // ── Daily bar summary ─────────────────────────────────────────────
-        val dailySummary = buildDailySummary(type, from, to, records)
+        val dailySummary = buildDailySummary(type, from, to, records, catMap)
 
         // ── Totals ────────────────────────────────────────────────────────
         val totalTracked = records.sumOf { it.durationMinutes }
@@ -218,33 +224,36 @@ class AnalyticsViewModel @Inject constructor(
         type: PeriodType,
         from: LocalDate,
         to: LocalDate,
-        records: List<TimeRecord>
+        records: List<TimeRecord>,
+        catMap: Map<Long, Category>
     ): List<DailyBarEntry> {
         val today = LocalDate.now()
         return when (type) {
             PeriodType.DAY -> {
                 val byHour = records.groupBy { it.startTime.hour }
-                    .mapValues { (_, recs) -> recs.sumOf { it.durationMinutes } }
                 (0 until 24).mapNotNull { hour ->
-                    val mins = byHour[hour] ?: 0
-                    if (mins > 0) DailyBarEntry(
+                    val recs = byHour[hour] ?: emptyList()
+                    val total = recs.sumOf { it.durationMinutes }
+                    if (total > 0) DailyBarEntry(
                         label = "%02dh".format(hour),
                         date = from,
-                        totalMinutes = mins,
+                        totalMinutes = total,
+                        segments = buildSegments(recs, catMap),
                         isToday = from == today
                     ) else null
                 }
             }
             PeriodType.WEEK -> {
                 val byDate = records.groupBy { it.startTime.toLocalDate() }
-                    .mapValues { (_, recs) -> recs.sumOf { it.durationMinutes } }
                 var d = from
                 buildList {
                     while (d.isBefore(to)) {
+                        val recs = byDate[d] ?: emptyList()
                         add(DailyBarEntry(
                             label = d.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()),
                             date = d,
-                            totalMinutes = byDate[d] ?: 0,
+                            totalMinutes = recs.sumOf { it.durationMinutes },
+                            segments = buildSegments(recs, catMap),
                             isToday = d == today
                         ))
                         d = d.plusDays(1)
@@ -253,15 +262,16 @@ class AnalyticsViewModel @Inject constructor(
             }
             PeriodType.MONTH -> {
                 val byDate = records.groupBy { it.startTime.toLocalDate() }
-                    .mapValues { (_, recs) -> recs.sumOf { it.durationMinutes } }
                 var d = from
                 buildList {
                     while (d.isBefore(to)) {
+                        val recs = byDate[d] ?: emptyList()
                         add(DailyBarEntry(
                             label = if (d.dayOfMonth % 5 == 1 || d.dayOfMonth == 1)
                                 d.dayOfMonth.toString() else "",
                             date = d,
-                            totalMinutes = byDate[d] ?: 0,
+                            totalMinutes = recs.sumOf { it.durationMinutes },
+                            segments = buildSegments(recs, catMap),
                             isToday = d == today
                         ))
                         d = d.plusDays(1)
@@ -269,6 +279,17 @@ class AnalyticsViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun buildSegments(records: List<TimeRecord>, catMap: Map<Long, Category>): List<BarSegment> {
+        return records.filter { it.durationMinutes > 0 }.groupBy { it.categoryId }
+            .map { (catId, recs) -> 
+                val cat = catMap[catId]
+                BarSegment(
+                    minutes = recs.sumOf { it.durationMinutes },
+                    colorHex = cat?.colorHex ?: "#9E9E9E"
+                )
+            }.sortedByDescending { it.minutes }
     }
 
     private fun computeSleepAnalytics(records: List<TimeRecord>): SleepAnalyticsUi? {
