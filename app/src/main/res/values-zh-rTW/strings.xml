@@ -32,6 +32,8 @@
     <!-- Timer -->
     <string name="start">開始</string>
     <string name="stop">停止</string>
+    <string name="timer_running">計時中</string>
+    <string name="timer_record_saved">已建立 %d 分鐘的紀錄，點擊編輯補充細節</string>
 
     <!-- Sleep -->
     <string name="sleep_time">入睡時間</string>

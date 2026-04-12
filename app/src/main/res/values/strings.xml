@@ -32,6 +32,8 @@
     <!-- Timer -->
     <string name="start">Start</string>
     <string name="stop">Stop</string>
+    <string name="timer_running">Timer Running</string>
+    <string name="timer_record_saved">Record saved (%d min). Tap Edit to add details.</string>
 
     <!-- Sleep -->
     <string name="sleep_time">Sleep Time</string>

@@ -35,7 +35,11 @@ fun AppNavGraph() {
                 )
             }
             composable(Screen.Timer.route) {
-                TimerScreen()
+                TimerScreen(
+                    onNavigateToEdit = { recordId ->
+                        navController.navigate("edit_record/$recordId")
+                    }
+                )
             }
             composable(Screen.AddRecord.route) {
                 AddRecordScreen(
