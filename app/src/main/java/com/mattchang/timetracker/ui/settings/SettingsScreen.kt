@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,6 +24,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mattchang.timetracker.R
 import com.mattchang.timetracker.domain.model.Category
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,6 +77,46 @@ fun SettingsScreen(
                     onDelete = { viewModel.deleteCategory(category) }
                 )
             }
+            
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = stringResource(R.string.data_management),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+
+            item {
+                val context = androidx.compose.ui.platform.LocalContext.current
+                val coroutineScope = rememberCoroutineScope()
+                var csvContent by remember { mutableStateOf("") }
+                
+                val createDocumentLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+                    contract = androidx.activity.result.contract.ActivityResultContracts.CreateDocument("text/csv")
+                ) { uri ->
+                    uri?.let {
+                        viewModel.saveCsvToUri(context, it, csvContent)
+                    }
+                }
+                
+                OutlinedButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            csvContent = viewModel.generateCsvContent()
+                            val dateStr = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                            createDocumentLauncher.launch("time_tracker_backup_$dateStr.csv")
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(androidx.compose.material.icons.Icons.Default.Share, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
+                    Text(stringResource(R.string.export_csv))
+                }
+            }
+
         }
 
         if (showDialog) {

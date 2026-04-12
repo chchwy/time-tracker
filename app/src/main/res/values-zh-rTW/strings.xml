@@ -11,6 +11,8 @@
     <string name="tab_settings">設定</string>
     <string name="settings">設定</string>
     <string name="categories">分類管理</string>
+    <string name="data_management">資料管理</string>
+    <string name="export_csv">匯出資料 (CSV)</string>
     <string name="add_category">新增分類</string>
     <string name="edit_category">編輯分類</string>
     <string name="name">名稱</string>
