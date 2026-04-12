@@ -42,6 +42,9 @@ interface TimeRecordDao {
     )
     fun getCategorySummary(from: Long, to: Long): Flow<List<CategorySummary>>
 
+    @Query("SELECT DISTINCT title FROM time_records WHERE title IS NOT NULL AND title != '' ORDER BY start_time DESC LIMIT 20")
+    fun getRecentTitles(): Flow<List<String>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertRecord(record: TimeRecordEntity): Long
 

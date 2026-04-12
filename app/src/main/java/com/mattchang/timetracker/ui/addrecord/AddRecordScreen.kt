@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mattchang.timetracker.R
+import com.mattchang.timetracker.ui.components.AutoCompleteTextField
 import com.mattchang.timetracker.ui.components.CategorySelector
 import com.mattchang.timetracker.ui.components.DateTimeField
 import com.mattchang.timetracker.ui.components.DurationText
@@ -81,11 +82,12 @@ fun AddRecordScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            OutlinedTextField(
+            val recentTitles by viewModel.recentTitles.collectAsStateWithLifecycle()
+            AutoCompleteTextField(
                 value = uiState.title,
                 onValueChange = viewModel::updateTitle,
-                label = { Text(stringResource(R.string.title)) },
-                singleLine = true,
+                suggestions = recentTitles,
+                label = stringResource(R.string.title),
                 modifier = Modifier.fillMaxWidth()
             )
 

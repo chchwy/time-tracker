@@ -66,6 +66,9 @@ class AddRecordViewModel @Inject constructor(
     val tags: StateFlow<List<Tag>> = tagRepository.getAllTags()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val recentTitles: StateFlow<List<String>> = timeRecordRepository.getRecentTitles()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     init {
         val recordId = savedStateHandle.get<Long>("recordId") ?: 0L
         if (recordId > 0) {
