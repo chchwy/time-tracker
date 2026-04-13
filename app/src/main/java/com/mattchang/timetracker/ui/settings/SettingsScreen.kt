@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Delete
@@ -32,6 +33,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mattchang.timetracker.R
 import com.mattchang.timetracker.domain.model.Category
+import com.mattchang.timetracker.util.LocaleHelper
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,6 +46,11 @@ fun SettingsScreen(
     var showRestoreConfirm by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val activity = context as? android.app.Activity
+    var isEnglish by remember {
+        mutableStateOf(LocaleHelper.getSavedLanguage(context) == LocaleHelper.LANG_EN)
+    }
 
     val importSuccessTemplate = stringResource(R.string.import_success)
     val importFailedMsg = stringResource(R.string.import_failed)
@@ -99,6 +106,54 @@ fun SettingsScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            // ── Language section ───────────────────────────────────────────────
+            item {
+                Text(
+                    text = stringResource(R.string.language),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Language,
+                            contentDescription = null,
+                            modifier = Modifier.padding(end = 16.dp)
+                        )
+                        Text(
+                            text = if (isEnglish) "English" else "中文",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Switch(
+                            checked = isEnglish,
+                            onCheckedChange = { checked ->
+                                isEnglish = checked
+                                LocaleHelper.saveLanguage(
+                                    context,
+                                    if (checked) LocaleHelper.LANG_EN else LocaleHelper.LANG_ZH
+                                )
+                                activity?.recreate()
+                            }
+                        )
+                    }
+                }
+            }
+
+            item { Spacer(modifier = Modifier.height(16.dp)) }
+
             item {
                 Text(
                     text = stringResource(R.string.categories),

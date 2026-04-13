@@ -10,6 +10,7 @@
     <string name="tab_analytics">Analytics</string>
     <string name="tab_settings">Settings</string>
     <string name="settings">Settings</string>
+    <string name="language">Language</string>
     <string name="categories">Categories</string>
     <string name="manage_categories">Manage Categories</string>
     <string name="data_management">Data Management</string>
