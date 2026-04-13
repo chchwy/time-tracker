@@ -115,7 +115,11 @@ class AddRecordViewModel @Inject constructor(
     }
 
     fun updateStartTime(dateTime: LocalDateTime) {
-        _uiState.update { it.copy(startTime = dateTime, errorMessage = null) }
+        _uiState.update { state ->
+            val duration = java.time.Duration.between(state.startTime, state.endTime)
+            val newEnd = dateTime.plus(duration)
+            state.copy(startTime = dateTime, endTime = newEnd, errorMessage = null)
+        }
     }
 
     fun updateEndTime(dateTime: LocalDateTime) {
