@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDateTime
@@ -73,6 +74,20 @@ class AddRecordViewModel @Inject constructor(
         val recordId = savedStateHandle.get<Long>("recordId") ?: 0L
         if (recordId > 0) {
             loadRecord(recordId)
+        } else {
+            viewModelScope.launch {
+                val records = timeRecordRepository.getAllRecords().first()
+                val today = java.time.LocalDate.now()
+                // Find all records that ended today
+                val todayRecords = records.filter { it.endTime.toLocalDate() == today }
+                if (todayRecords.isNotEmpty()) {
+                    val latestEndTime = todayRecords.maxOf { it.endTime }
+                    val now = LocalDateTime.now().withSecond(0).withNano(0)
+                    // If latestEndTime is in the future (e.g. tracking anomaly), cap it at 'now'
+                    val newStartTime = if (latestEndTime.isAfter(now)) now else latestEndTime
+                    _uiState.update { it.copy(startTime = newStartTime, endTime = newStartTime) }
+                }
+            }
         }
     }
 
