@@ -48,7 +48,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mattchang.timetracker.R
-import com.mattchang.timetracker.ui.components.BarChart
 import com.mattchang.timetracker.ui.components.DonutChart
 import com.mattchang.timetracker.ui.components.PieSlice
 
@@ -110,7 +109,7 @@ fun AnalyticsScreen(
         }
 
         // ── Empty state ───────────────────────────────────────────────────
-        if (uiState.categorySummary.isEmpty() && uiState.dailySummary.all { it.totalMinutes == 0 }) {
+        if (uiState.totalTrackedMinutes == 0 && uiState.sleepAnalytics == null) {
             item {
                 Column(
                     modifier = Modifier
@@ -152,29 +151,6 @@ fun AnalyticsScreen(
                         icon = Icons.Default.Coffee,
                         modifier = Modifier.weight(1f)
                     )
-                }
-            }
-
-            // ── Bar chart ─────────────────────────────────────────────────
-            if (uiState.dailySummary.isNotEmpty()) {
-                item {
-                    val title = if (uiState.periodType == PeriodType.DAY) 
-                        stringResource(R.string.hourly_distribution) 
-                    else 
-                        stringResource(R.string.daily_distribution)
-                        
-                    SectionCard(title = title) {
-                        BarChart(
-                            entries = uiState.dailySummary,
-                            barColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-                            todayColor = MaterialTheme.colorScheme.primary,
-                            labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(160.dp)
-                                .padding(top = 8.dp)
-                        )
-                    }
                 }
             }
 

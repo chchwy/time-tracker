@@ -87,8 +87,6 @@
     <string name="month">月</string>
     <string name="total_tracked">總計追蹤</string>
     <string name="daily_avg">日均</string>
-    <string name="daily_distribution">每日分布</string>
-    <string name="hourly_distribution">每小時分布</string>
     <string name="category_distribution">分類占比</string>
     <string name="sleep_analysis">睡眠分析</string>
     <string name="avg_sleep_duration">平均時長</string>

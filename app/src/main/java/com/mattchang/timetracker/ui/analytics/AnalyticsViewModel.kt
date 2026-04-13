@@ -20,8 +20,6 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.time.format.TextStyle
-import java.util.Locale
 import javax.inject.Inject
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -33,19 +31,6 @@ data class CategorySummaryUi(
     val colorHex: String,
     val totalMinutes: Int,
     val fraction: Float
-)
-
-data class BarSegment(
-    val minutes: Int,
-    val colorHex: String
-)
-
-data class DailyBarEntry(
-    val label: String,
-    val date: LocalDate,
-    val totalMinutes: Int,
-    val segments: List<BarSegment> = emptyList(),
-    val isToday: Boolean = false
 )
 
 data class SleepAnalyticsUi(
@@ -60,7 +45,6 @@ data class AnalyticsUiState(
     val periodType: PeriodType = PeriodType.WEEK,
     val periodLabel: String = "",
     val categorySummary: List<CategorySummaryUi> = emptyList(),
-    val dailySummary: List<DailyBarEntry> = emptyList(),
     val totalTrackedMinutes: Int = 0,
     val dailyAvgMinutes: Float = 0f,
     val sleepAnalytics: SleepAnalyticsUi? = null
@@ -132,9 +116,6 @@ class AnalyticsViewModel @Inject constructor(
             )
         }.sortedByDescending { it.totalMinutes }
 
-        // ── Daily bar summary ─────────────────────────────────────────────
-        val dailySummary = buildDailySummary(type, from, to, records, catMap)
-
         // ── Totals ────────────────────────────────────────────────────────
         val totalTracked = records.sumOf { it.durationMinutes }
         val dayCount = when (type) {
@@ -156,7 +137,6 @@ class AnalyticsViewModel @Inject constructor(
             periodType = type,
             periodLabel = buildPeriodLabel(type, from, to),
             categorySummary = categorySummary,
-            dailySummary = dailySummary,
             totalTrackedMinutes = totalTracked,
             dailyAvgMinutes = dailyAvg,
             sleepAnalytics = computeSleepAnalytics(periodSleep)
@@ -218,78 +198,6 @@ class AnalyticsViewModel @Inject constructor(
             PeriodType.WEEK -> "${from.format(mdf)} – ${to.minusDays(1).format(mdf)}"
             PeriodType.MONTH -> from.format(DateTimeFormatter.ofPattern("yyyy/MM"))
         }
-    }
-
-    private fun buildDailySummary(
-        type: PeriodType,
-        from: LocalDate,
-        to: LocalDate,
-        records: List<TimeRecord>,
-        catMap: Map<Long, Category>
-    ): List<DailyBarEntry> {
-        val today = LocalDate.now()
-        return when (type) {
-            PeriodType.DAY -> {
-                val byHour = records.groupBy { it.startTime.hour }
-                (0 until 24).mapNotNull { hour ->
-                    val recs = byHour[hour] ?: emptyList()
-                    val total = recs.sumOf { it.durationMinutes }
-                    if (total > 0) DailyBarEntry(
-                        label = "%02dh".format(hour),
-                        date = from,
-                        totalMinutes = total,
-                        segments = buildSegments(recs, catMap),
-                        isToday = from == today
-                    ) else null
-                }
-            }
-            PeriodType.WEEK -> {
-                val byDate = records.groupBy { it.startTime.toLocalDate() }
-                var d = from
-                buildList {
-                    while (d.isBefore(to)) {
-                        val recs = byDate[d] ?: emptyList()
-                        add(DailyBarEntry(
-                            label = d.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()),
-                            date = d,
-                            totalMinutes = recs.sumOf { it.durationMinutes },
-                            segments = buildSegments(recs, catMap),
-                            isToday = d == today
-                        ))
-                        d = d.plusDays(1)
-                    }
-                }
-            }
-            PeriodType.MONTH -> {
-                val byDate = records.groupBy { it.startTime.toLocalDate() }
-                var d = from
-                buildList {
-                    while (d.isBefore(to)) {
-                        val recs = byDate[d] ?: emptyList()
-                        add(DailyBarEntry(
-                            label = if (d.dayOfMonth % 5 == 1 || d.dayOfMonth == 1)
-                                d.dayOfMonth.toString() else "",
-                            date = d,
-                            totalMinutes = recs.sumOf { it.durationMinutes },
-                            segments = buildSegments(recs, catMap),
-                            isToday = d == today
-                        ))
-                        d = d.plusDays(1)
-                    }
-                }
-            }
-        }
-    }
-
-    private fun buildSegments(records: List<TimeRecord>, catMap: Map<Long, Category>): List<BarSegment> {
-        return records.filter { it.durationMinutes > 0 }.groupBy { it.categoryId }
-            .map { (catId, recs) -> 
-                val cat = catMap[catId]
-                BarSegment(
-                    minutes = recs.sumOf { it.durationMinutes },
-                    colorHex = cat?.colorHex ?: "#9E9E9E"
-                )
-            }.sortedByDescending { it.minutes }
     }
 
     private fun computeSleepAnalytics(records: List<TimeRecord>): SleepAnalyticsUi? {
