@@ -44,6 +44,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.Alignment
@@ -68,6 +69,7 @@ import java.time.format.TextStyle
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.roundToInt
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,6 +83,7 @@ fun SleepScreen(
     val insights by viewModel.insights.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val clipboardManager = LocalClipboardManager.current
+    val scope = rememberCoroutineScope()
     var selectedTab by remember { mutableIntStateOf(0) }
 
     val savedMsg = stringResource(R.string.sleep_saved)
@@ -149,7 +152,9 @@ fun SleepScreen(
                     onCopyForAi = {
                         val text = buildSleepExportText(sleepRecords)
                         clipboardManager.setText(AnnotatedString(text))
-                        snackbarHostState.showSnackbar(copiedMsg)
+                        scope.launch {
+                            snackbarHostState.showSnackbar(copiedMsg)
+                        }
                     }
                 )
             }
