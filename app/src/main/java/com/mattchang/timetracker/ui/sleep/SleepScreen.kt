@@ -57,6 +57,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mattchang.timetracker.R
 import com.mattchang.timetracker.domain.model.TimeRecord
+import com.mattchang.timetracker.ui.components.AutoCompleteTextField
 import com.mattchang.timetracker.ui.components.DateTimeField
 import com.mattchang.timetracker.ui.components.DurationText
 import java.time.LocalDateTime
@@ -71,6 +72,7 @@ fun SleepScreen(
 ) {
     val form by viewModel.form.collectAsStateWithLifecycle()
     val sleepRecords by viewModel.sleepRecords.collectAsStateWithLifecycle()
+    val recentBedtimeBookTitles by viewModel.recentBedtimeBookTitles.collectAsStateWithLifecycle()
     val insights by viewModel.insights.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     var selectedTab by remember { mutableIntStateOf(0) }
@@ -127,6 +129,7 @@ fun SleepScreen(
                     onToggleUsedComputer = viewModel::toggleUsedComputer,
                     onToggleReadBook = viewModel::toggleReadBook,
                     onBookTitleBeforeBedChanged = viewModel::updateBookTitleBeforeBed,
+                    recentBedtimeBookTitles = recentBedtimeBookTitles,
                     onToggleChattedWithWife = viewModel::toggleChattedWithWife,
                     onStayUpLateReasonChanged = viewModel::updateStayUpLateReason,
                     onMorningEnergyChanged = viewModel::updateMorningEnergy,
@@ -153,6 +156,7 @@ private fun SleepFormTab(
     onToggleUsedComputer: () -> Unit,
     onToggleReadBook: () -> Unit,
     onBookTitleBeforeBedChanged: (String) -> Unit,
+    recentBedtimeBookTitles: List<String>,
     onToggleChattedWithWife: () -> Unit,
     onStayUpLateReasonChanged: (String) -> Unit,
     onMorningEnergyChanged: (Int) -> Unit,
@@ -264,12 +268,12 @@ private fun SleepFormTab(
         }
         if (form.readBookBeforeBed) {
             item {
-                OutlinedTextField(
+                AutoCompleteTextField(
                     value = form.bookTitleBeforeBed,
                     onValueChange = onBookTitleBeforeBedChanged,
-                    label = { Text(stringResource(R.string.book_title_before_bed)) },
+                    suggestions = recentBedtimeBookTitles,
+                    label = stringResource(R.string.book_title_before_bed),
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
                 )
             }
         }

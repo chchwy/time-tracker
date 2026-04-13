@@ -72,6 +72,9 @@ class SleepViewModel @Inject constructor(
     val sleepRecords: StateFlow<List<TimeRecord>> = timeRecordRepository.getSleepRecords()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val recentBedtimeBookTitles: StateFlow<List<String>> = timeRecordRepository.getRecentBedtimeBookTitles()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     val insights: StateFlow<SleepInsights> = sleepRecords
         .map { records -> computeInsights(records) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SleepInsights())

@@ -45,6 +45,13 @@ interface TimeRecordDao {
     @Query("SELECT DISTINCT title FROM time_records WHERE title IS NOT NULL AND title != '' ORDER BY start_time DESC LIMIT 20")
     fun getRecentTitles(): Flow<List<String>>
 
+    @Query(
+        "SELECT DISTINCT book_title_before_bed FROM time_records " +
+        "WHERE type = 'SLEEP' AND book_title_before_bed IS NOT NULL AND book_title_before_bed != '' " +
+        "ORDER BY start_time DESC LIMIT 20"
+    )
+    fun getRecentBedtimeBookTitles(): Flow<List<String>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertRecord(record: TimeRecordEntity): Long
 

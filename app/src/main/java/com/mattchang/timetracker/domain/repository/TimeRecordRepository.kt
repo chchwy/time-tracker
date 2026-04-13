@@ -8,6 +8,7 @@ interface TimeRecordRepository {
     fun getRecordsBetween(fromMillis: Long, toMillis: Long): Flow<List<TimeRecord>>
     fun getSleepRecords(): Flow<List<TimeRecord>>
     fun getRecentTitles(): Flow<List<String>>
+    fun getRecentBedtimeBookTitles(): Flow<List<String>>
     suspend fun getRecordById(id: Long): TimeRecord?
     suspend fun insertRecord(record: TimeRecord, tagIds: List<Long>): Long
     suspend fun updateRecord(record: TimeRecord, tagIds: List<Long>)
