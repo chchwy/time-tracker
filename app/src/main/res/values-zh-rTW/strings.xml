@@ -87,6 +87,12 @@
     <string name="month">月</string>
     <string name="total_tracked">總計追蹤</string>
     <string name="daily_avg">日均</string>
+    <string name="decision_panel">決策面板</string>
+    <string name="peak_focus_window">高效時段</string>
+    <string name="consistency_score">穩定度分數</string>
+    <string name="peak_confidence">高峰可信度</string>
+    <string name="drift_alert">漂移警示</string>
+    <string name="next_actions">下步建議</string>
     <string name="category_distribution">分類占比</string>
     <string name="sleep_analysis">睡眠分析</string>
     <string name="avg_sleep_duration">平均時長</string>
