@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -34,8 +35,28 @@ fun SettingsScreen(
     val categories by viewModel.categories.collectAsStateWithLifecycle()
     var showDialog by remember { mutableStateOf(false) }
     var editingCategory by remember { mutableStateOf<Category?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
+    val importSuccessTemplate = stringResource(R.string.import_success)
+    val importFailedMsg = stringResource(R.string.import_failed)
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is SettingsEvent.ImportDone -> {
+                    val msg = importSuccessTemplate
+                        .replace("%1\$d", event.result.imported.toString())
+                        .replace("%2\$d", event.result.skipped.toString())
+                    snackbarHostState.showSnackbar(msg)
+                }
+                SettingsEvent.ImportFailed -> snackbarHostState.showSnackbar(importFailedMsg)
+            }
+        }
+    }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.settings)) }
@@ -91,29 +112,43 @@ fun SettingsScreen(
 
             item {
                 val context = androidx.compose.ui.platform.LocalContext.current
-                val coroutineScope = rememberCoroutineScope()
                 var csvContent by remember { mutableStateOf("") }
-                
+
                 val createDocumentLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
                     contract = androidx.activity.result.contract.ActivityResultContracts.CreateDocument("text/csv")
                 ) { uri ->
-                    uri?.let {
-                        viewModel.saveCsvToUri(context, it, csvContent)
-                    }
+                    uri?.let { viewModel.saveCsvToUri(context, it, csvContent) }
                 }
-                
-                OutlinedButton(
-                    onClick = {
-                        coroutineScope.launch {
-                            csvContent = viewModel.generateCsvContent()
-                            val dateStr = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                            createDocumentLauncher.launch("time_tracker_backup_$dateStr.csv")
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(androidx.compose.material.icons.Icons.Default.Share, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
-                    Text(stringResource(R.string.export_csv))
+
+                val openDocumentLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+                    contract = androidx.activity.result.contract.ActivityResultContracts.GetContent()
+                ) { uri ->
+                    uri?.let { viewModel.importCsvFromUri(context, it) }
+                }
+
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(
+                        onClick = {
+                            coroutineScope.launch {
+                                csvContent = viewModel.generateCsvContent()
+                                val dateStr = java.time.LocalDate.now()
+                                    .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                                createDocumentLauncher.launch("time_tracker_backup_$dateStr.csv")
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
+                        Text(stringResource(R.string.export_csv))
+                    }
+
+                    OutlinedButton(
+                        onClick = { openDocumentLauncher.launch("text/*") },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Default.FileDownload, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
+                        Text(stringResource(R.string.import_csv))
+                    }
                 }
             }
 

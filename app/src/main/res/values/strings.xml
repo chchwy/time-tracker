@@ -13,6 +13,10 @@
     <string name="categories">Categories</string>
     <string name="data_management">Data Management</string>
     <string name="export_csv">Export Data (CSV)</string>
+    <string name="import_csv">Import Data (CSV)</string>
+    <string name="import_success">Imported %1$d records (%2$d skipped)</string>
+    <string name="import_failed">Import failed: could not read file</string>
+    <string name="importing">Importing…</string>
     <string name="add_category">Add Category</string>
     <string name="edit_category">Edit Category</string>
     <string name="name">Name</string>
