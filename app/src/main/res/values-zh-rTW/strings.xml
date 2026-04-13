@@ -68,6 +68,9 @@
     <string name="days_format">%d 天</string>
     <string name="no_sleep_records">還沒有睡眠紀錄。\n點擊「記錄睡眠」來新增。</string>
     <string name="insights_title">快速洞察</string>
+    <string name="sleep_export_for_ai">一鍵複製給 AI</string>
+    <string name="sleep_export_hint">會複製成可直接貼到聊天視窗的純文字格式。</string>
+    <string name="sleep_export_copied">已複製睡眠紀錄到剪貼簿</string>
 
     <!-- Tags -->
     <string name="add_tag">新增標籤</string>

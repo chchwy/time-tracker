@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ElectricBolt
 import androidx.compose.material.icons.filled.NightlightRound
 import androidx.compose.material3.Card
@@ -44,11 +45,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -61,7 +64,9 @@ import com.mattchang.timetracker.ui.components.AutoCompleteTextField
 import com.mattchang.timetracker.ui.components.DateTimeField
 import com.mattchang.timetracker.ui.components.DurationText
 import java.time.LocalDateTime
+import java.time.format.TextStyle
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,9 +80,11 @@ fun SleepScreen(
     val recentBedtimeBookTitles by viewModel.recentBedtimeBookTitles.collectAsStateWithLifecycle()
     val insights by viewModel.insights.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val clipboardManager = LocalClipboardManager.current
     var selectedTab by remember { mutableIntStateOf(0) }
 
     val savedMsg = stringResource(R.string.sleep_saved)
+    val copiedMsg = stringResource(R.string.sleep_export_copied)
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -138,7 +145,12 @@ fun SleepScreen(
                 )
                 1 -> SleepHistoryTab(
                     insights = insights,
-                    records = sleepRecords
+                    records = sleepRecords,
+                    onCopyForAi = {
+                        val text = buildSleepExportText(sleepRecords)
+                        clipboardManager.setText(AnnotatedString(text))
+                        snackbarHostState.showSnackbar(copiedMsg)
+                    }
                 )
             }
         }
@@ -346,7 +358,8 @@ private fun SleepFormTab(
 @Composable
 private fun SleepHistoryTab(
     insights: SleepInsights,
-    records: List<TimeRecord>
+    records: List<TimeRecord>,
+    onCopyForAi: () -> Unit
 ) {
     if (records.isEmpty()) {
         Column(
@@ -418,10 +431,32 @@ private fun SleepHistoryTab(
 
         // ── Sleep record history ──────────────────────────────────────────
         item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.sleep_history_tab),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                TextButton(onClick = onCopyForAi) {
+                    Icon(
+                        Icons.Default.ContentCopy,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.size(6.dp))
+                    Text(text = stringResource(R.string.sleep_export_for_ai))
+                }
+            }
+        }
+        item {
             Text(
-                text = stringResource(R.string.sleep_history_tab),
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.primary
+                text = stringResource(R.string.sleep_export_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
         items(records, key = { it.id }) { record ->
@@ -606,5 +641,69 @@ private fun energyColor(energy: Int): Color {
         energy >= 8 -> Color(0xFF4CAF50)   // green
         energy >= 5 -> Color(0xFFFF9800)   // orange
         else        -> Color(0xFFF44336)   // red
+    }
+}
+
+private fun buildSleepExportText(records: List<TimeRecord>): String {
+    if (records.isEmpty()) return ""
+
+    val sorted = records.sortedByDescending { it.endTime }
+    val grouped = sorted.groupBy { it.endTime.toLocalDate().withDayOfMonth(1) }
+    val monthFormatter = DateTimeFormatter.ofPattern("yyyy MMM", Locale.ENGLISH)
+
+    return buildString {
+        grouped.entries.forEachIndexed { index, (monthStart, monthRecords) ->
+            if (index > 0) appendLine()
+            appendLine(monthStart.format(monthFormatter))
+            monthRecords.forEach { record ->
+                appendLine(formatSleepRecordForAi(record))
+            }
+        }
+    }.trimEnd()
+}
+
+private fun formatSleepRecordForAi(record: TimeRecord): String {
+    val wakeDate = record.endTime.toLocalDate()
+    val dayToken = wakeDate.dayOfMonth.toString().padStart(2, '0')
+    val weekday = wakeDate.dayOfWeek.getDisplayName(TextStyle.NARROW, Locale.TAIWAN)
+
+    val details = mutableListOf<String>()
+    details += "${formatBedtime(record.startTime)}睡"
+    details += if (record.childInterrupted == true) "半夜小孩干擾" else "半夜沒干擾"
+    details += if (record.usedComputerBeforeBed == true) "有開電腦" else "沒開電腦"
+
+    if (record.readBookBeforeBed == true) {
+        val title = record.bookTitleBeforeBed?.trim().orEmpty()
+        details += if (title.isNotEmpty()) "睡前讀《$title》" else "睡前有讀書"
+    }
+
+    if (record.chattedWithWife == true) {
+        details += "睡前跟老婆聊天"
+    }
+
+    record.stayUpLateReason
+        ?.trim()
+        ?.takeIf { it.isNotEmpty() }
+        ?.let { details += it }
+
+    details += "${formatWakeTime(record.endTime)}起床"
+    record.morningEnergyIndex?.let { details += "能量$it/10" }
+
+    return "- $dayToken $weekday: ${details.joinToString(" ")}"
+}
+
+private fun formatBedtime(time: LocalDateTime): String {
+    return if (time.minute == 0) {
+        "${time.hour}點"
+    } else {
+        time.format(DateTimeFormatter.ofPattern("H:mm"))
+    }
+}
+
+private fun formatWakeTime(time: LocalDateTime): String {
+    return if (time.minute == 0) {
+        "${time.hour}點"
+    } else {
+        time.format(DateTimeFormatter.ofPattern("H:mm"))
     }
 }

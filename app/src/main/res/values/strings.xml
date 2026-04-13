@@ -73,6 +73,9 @@
     <string name="days_format">%d days</string>
     <string name="no_sleep_records">No sleep records yet.\nTap \"Log Sleep\" to add your first.</string>
     <string name="insights_title">Quick Insights</string>
+    <string name="sleep_export_for_ai">Copy for AI</string>
+    <string name="sleep_export_hint">Copies sleep history as plain text for chatbots.</string>
+    <string name="sleep_export_copied">Sleep history copied to clipboard</string>
 
     <!-- Tags -->
     <string name="add_tag">Add Tag</string>
