@@ -180,6 +180,18 @@ class SleepViewModel @Inject constructor(
         }
     }
 
+    fun delete() {
+        val state = _form.value
+        if (state.isEditing) {
+            viewModelScope.launch {
+                timeRecordRepository.getRecordById(state.editingRecordId)?.let { record ->
+                    timeRecordRepository.deleteRecord(record)
+                    _events.emit(SleepEvent.SaveSuccess)
+                }
+            }
+        }
+    }
+
     // ── Insights Computation ─────────────────────────────────────────────
 
     private fun computeInsights(records: List<TimeRecord>): SleepInsights {

@@ -98,19 +98,13 @@ fun RecordListScreen(
                         }
 
                         items(dayRecords, key = { it.id }) { record ->
-                            SwipeToDismissItem(
+                            TimeRecordCard(
                                 record = record,
-                                categoryMap = categoryMap,
+                                category = record.categoryId?.let { categoryMap[it] },
                                 onClick = {
                                     if (record.isSleep) onSleepRecordClick(record.id)
                                     else onRecordClick(record.id)
-                                },
-                                onDelete = {
-                                    viewModel.deleteRecord(record)
-                                },
-                                snackbarHostState = snackbarHostState,
-                                deleteText = deleteText,
-                                undoText = undoText
+                                }
                             )
                         }
                     }
@@ -130,62 +124,6 @@ private fun DateHeader(date: LocalDate, formatter: DateTimeFormatter) {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun SwipeToDismissItem(
-    record: TimeRecord,
-    categoryMap: Map<Long, com.mattchang.timetracker.domain.model.Category>,
-    onClick: () -> Unit,
-    onDelete: () -> Unit,
-    snackbarHostState: SnackbarHostState,
-    deleteText: String,
-    undoText: String
-) {
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = { value ->
-            if (value == SwipeToDismissBoxValue.EndToStart) {
-                onDelete()
-                true
-            } else {
-                false
-            }
-        }
-    )
-
-    SwipeToDismissBox(
-        state = dismissState,
-        backgroundContent = {
-            val color by animateColorAsState(
-                targetValue = if (dismissState.targetValue == SwipeToDismissBoxValue.EndToStart) {
-                    MaterialTheme.colorScheme.errorContainer
-                } else {
-                    MaterialTheme.colorScheme.surface
-                },
-                label = "swipe_bg"
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(color)
-                    .padding(horizontal = 20.dp),
-                contentAlignment = Alignment.CenterEnd
-            ) {
-                Icon(
-                    Icons.Default.Delete,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onErrorContainer
-                )
-            }
-        },
-        enableDismissFromStartToEnd = false
-    ) {
-        TimeRecordCard(
-            record = record,
-            category = record.categoryId?.let { categoryMap[it] },
-            onClick = onClick
-        )
-    }
-}
 
 @Composable
 private fun EmptyState() {

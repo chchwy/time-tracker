@@ -129,7 +129,8 @@ fun SleepScreen(
                     onToggleChattedWithWife = viewModel::toggleChattedWithWife,
                     onStayUpLateReasonChanged = viewModel::updateStayUpLateReason,
                     onMorningEnergyChanged = viewModel::updateMorningEnergy,
-                    onSave = viewModel::save
+                    onSave = viewModel::save,
+                    onDelete = viewModel::delete
                 )
                 1 -> SleepHistoryTab(
                     insights = insights,
@@ -153,7 +154,8 @@ private fun SleepFormTab(
     onToggleChattedWithWife: () -> Unit,
     onStayUpLateReasonChanged: (String) -> Unit,
     onMorningEnergyChanged: (Int) -> Unit,
-    onSave: () -> Unit
+    onSave: () -> Unit,
+    onDelete: () -> Unit
 ) {
     LazyColumn(
         modifier = Modifier
@@ -293,16 +295,29 @@ private fun SleepFormTab(
 
         // ── Save button ───────────────────────────────────────────────────
         item {
-            TextButton(
-                onClick = onSave,
-                modifier = Modifier.fillMaxWidth()
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(Icons.Default.Bedtime, contentDescription = null)
-                Spacer(modifier = Modifier.size(8.dp))
-                Text(
-                    text = stringResource(R.string.save),
-                    style = MaterialTheme.typography.titleMedium
-                )
+                if (form.isEditing) {
+                    androidx.compose.material3.OutlinedButton(
+                        onClick = onDelete,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
+                    }
+                }
+                TextButton(
+                    onClick = onSave,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(Icons.Default.Bedtime, contentDescription = null)
+                    Spacer(modifier = Modifier.size(8.dp))
+                    Text(
+                        text = stringResource(R.string.save),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(24.dp))
         }

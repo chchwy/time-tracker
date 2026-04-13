@@ -166,4 +166,16 @@ class AddRecordViewModel @Inject constructor(
             _events.emit(AddRecordEvent.SaveSuccess)
         }
     }
+
+    fun delete() {
+        val state = _uiState.value
+        if (state.isEditing) {
+            viewModelScope.launch {
+                timeRecordRepository.getRecordById(state.editingRecordId)?.let { record ->
+                    timeRecordRepository.deleteRecord(record)
+                    _events.emit(AddRecordEvent.SaveSuccess)
+                }
+            }
+        }
+    }
 }
