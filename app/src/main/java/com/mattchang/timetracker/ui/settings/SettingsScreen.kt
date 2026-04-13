@@ -37,12 +37,10 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
+    onNavigateToCategories: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
-    val categories by viewModel.categories.collectAsStateWithLifecycle()
     val cloudState by viewModel.cloudState.collectAsStateWithLifecycle()
-    var showCategoryDialog by remember { mutableStateOf(false) }
-    var editingCategory by remember { mutableStateOf<Category?>(null) }
     var showRestoreConfirm by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
@@ -92,14 +90,6 @@ fun SettingsScreen(
             CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.settings)) }
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = {
-                editingCategory = null
-                showCategoryDialog = true
-            }) {
-                Icon(Icons.Default.Add, contentDescription = "Add Category")
-            }
         }
     ) { paddingValues ->
         LazyColumn(
@@ -119,15 +109,19 @@ fun SettingsScreen(
                 )
             }
 
-            items(categories, key = { it.id }) { category ->
-                CategoryEditItem(
-                    category = category,
-                    onEdit = {
-                        editingCategory = category
-                        showCategoryDialog = true
-                    },
-                    onDelete = { viewModel.deleteCategory(category) }
-                )
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth().clickable { onNavigateToCategories() },
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.padding(end = 16.dp))
+                        Text(stringResource(R.string.manage_categories), style = MaterialTheme.typography.bodyLarge)
+                    }
+                }
             }
 
             // ── Local CSV section ─────────────────────────────────────────
@@ -205,21 +199,6 @@ fun SettingsScreen(
                     onRestore = { showRestoreConfirm = true }
                 )
             }
-        }
-
-        if (showCategoryDialog) {
-            CategoryEditDialog(
-                category = editingCategory,
-                onDismiss = { showCategoryDialog = false },
-                onSave = { name, colorHex ->
-                    if (editingCategory == null) {
-                        viewModel.addCategory(name, colorHex)
-                    } else {
-                        viewModel.updateCategory(editingCategory!!, name, colorHex)
-                    }
-                    showCategoryDialog = false
-                }
-            )
         }
 
         if (showRestoreConfirm) {
@@ -346,117 +325,4 @@ private fun CloudBackupSection(
     }
 }
 
-@Composable
-fun CategoryEditItem(
-    category: Category,
-    onEdit: () -> Unit,
-    onDelete: () -> Unit
-) {
-    val chipColor = try {
-        Color(android.graphics.Color.parseColor(category.colorHex))
-    } catch (_: Exception) {
-        MaterialTheme.colorScheme.primary
-    }
 
-    Card(
-        modifier = Modifier.fillMaxWidth().clickable { onEdit() },
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(24.dp)
-                    .background(chipColor, CircleShape)
-            )
-            Text(
-                text = category.name,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.weight(1f)
-            )
-            IconButton(onClick = onEdit) {
-                Icon(Icons.Default.Edit, contentDescription = "Edit")
-            }
-            IconButton(onClick = onDelete) {
-                Icon(Icons.Default.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.error)
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun CategoryEditDialog(
-    category: Category?,
-    onDismiss: () -> Unit,
-    onSave: (String, String) -> Unit
-) {
-    var name by remember { mutableStateOf(category?.name ?: "") }
-    var colorHex by remember { mutableStateOf(category?.colorHex ?: "#4CAF50") }
-
-    val presetColors = listOf(
-        "#F44336", "#E91E63", "#9C27B0", "#673AB7",
-        "#3F51B5", "#2196F3", "#03A9F4", "#00BCD4",
-        "#009688", "#4CAF50", "#8BC34A", "#CDDC39",
-        "#FFEB3B", "#FFC107", "#FF9800", "#FF5722",
-        "#795548", "#9E9E9E", "#607D8B"
-    )
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(if (category == null) stringResource(R.string.add_category) else stringResource(R.string.edit_category))
-        },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    label = { Text(stringResource(R.string.name)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Text(stringResource(R.string.color), style = MaterialTheme.typography.labelMedium)
-
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    presetColors.forEach { hex ->
-                        val color = Color(android.graphics.Color.parseColor(hex))
-                        Box(
-                            modifier = Modifier
-                                .size(32.dp)
-                                .background(color, CircleShape)
-                                .clickable { colorHex = hex }
-                                .then(
-                                    if (colorHex == hex) Modifier.border(3.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
-                                    else Modifier
-                                )
-                        )
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { onSave(name, colorHex) },
-                enabled = name.isNotBlank()
-            ) {
-                Text(stringResource(R.string.save))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.cancel))
-            }
-        }
-    )
-}

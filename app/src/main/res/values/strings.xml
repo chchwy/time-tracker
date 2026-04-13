@@ -11,6 +11,7 @@
     <string name="tab_settings">Settings</string>
     <string name="settings">Settings</string>
     <string name="categories">Categories</string>
+    <string name="manage_categories">Manage Categories</string>
     <string name="data_management">Data Management</string>
     <string name="export_csv">Export Data (CSV)</string>
     <string name="import_csv">Import Data (CSV)</string>

@@ -25,7 +25,7 @@ import java.time.LocalDateTime
 import javax.inject.Inject
 
 data class SleepFormState(
-    val sleepTime: LocalDateTime = LocalDateTime.now().withHour(23).withMinute(0).withSecond(0),
+    val sleepTime: LocalDateTime = LocalDateTime.now().minusDays(1).withHour(23).withMinute(30).withSecond(0),
     val wakeTime: LocalDateTime = LocalDateTime.now().withHour(7).withMinute(0).withSecond(0),
     val childInterrupted: Boolean = false,
     val usedComputerBeforeBed: Boolean = false,

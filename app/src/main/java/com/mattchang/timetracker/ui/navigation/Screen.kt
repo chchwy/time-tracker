@@ -21,6 +21,7 @@ sealed class Screen(
     data object Sleep : Screen("sleep", R.string.tab_sleep, Icons.Default.Bedtime)
     data object Analytics : Screen("analytics", R.string.tab_analytics, Icons.Default.BarChart)
     data object Settings : Screen("settings", R.string.settings, Icons.Default.Settings)
+    data object ManageCategories : Screen("manage_categories", R.string.manage_categories, Icons.Default.Settings)
 
     companion object {
         val bottomNavItems = listOf(Records, Timer, AddRecord, Sleep, Analytics)

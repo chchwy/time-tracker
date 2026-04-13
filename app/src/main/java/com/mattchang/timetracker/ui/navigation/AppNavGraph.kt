@@ -15,6 +15,7 @@ import com.mattchang.timetracker.ui.records.RecordListScreen
 import com.mattchang.timetracker.ui.sleep.SleepScreen
 import com.mattchang.timetracker.ui.timer.TimerScreen
 import com.mattchang.timetracker.ui.settings.SettingsScreen
+import com.mattchang.timetracker.ui.settings.ManageCategoriesScreen
 
 @Composable
 fun AppNavGraph() {
@@ -80,7 +81,16 @@ fun AppNavGraph() {
                 AnalyticsScreen()
             }
             composable(Screen.Settings.route) {
-                SettingsScreen()
+                SettingsScreen(
+                    onNavigateToCategories = {
+                        navController.navigate(Screen.ManageCategories.route)
+                    }
+                )
+            }
+            composable(Screen.ManageCategories.route) {
+                ManageCategoriesScreen(
+                    onBack = { navController.popBackStack() }
+                )
             }
         }
     }
