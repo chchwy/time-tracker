@@ -28,7 +28,7 @@ fun BottomNavBar(navController: NavController) {
                                 saveState = true
                             }
                             launchSingleTop = true
-                            restoreState = true
+                            restoreState = screen.route != Screen.Records.route
                         }
                     }
                 }
