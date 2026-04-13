@@ -85,6 +85,24 @@
     <string name="undo">Undo</string>
     <string name="minutes_format">%d min</string>
 
+    <!-- Cloud Backup -->
+    <string name="cloud_backup">Cloud Backup (Google Drive)</string>
+    <string name="cloud_backup_desc">Sign in with Google to back up your data to your own Google Drive. Your data stays private and only accessible to you.</string>
+    <string name="sign_in_google">Sign in with Google</string>
+    <string name="sign_out">Sign out</string>
+    <string name="backup_now">Back up</string>
+    <string name="restore">Restore</string>
+    <string name="last_backup">Last backup: %1$s</string>
+    <string name="no_backup_yet">No backup yet</string>
+    <string name="backup_done">Backup successful</string>
+    <string name="backup_failed">Backup failed. Check your connection and try again.</string>
+    <string name="restore_confirm_title">Restore from Cloud?</string>
+    <string name="restore_confirm_body">This will import all records from your latest backup. Existing records will not be deleted — duplicates may appear if you restore on a device that already has data.</string>
+    <string name="restore_success">Restored %1$d records (%2$d skipped)</string>
+    <string name="restore_failed">Restore failed. Check your connection and try again.</string>
+    <string name="no_backup_found">No backup found on Google Drive. Back up first.</string>
+    <string name="sign_in_failed">Sign-in failed. Make sure this app is registered in Google Cloud Console.</string>
+
     <!-- Analytics -->
     <string name="day">Day</string>
     <string name="week">Week</string>
