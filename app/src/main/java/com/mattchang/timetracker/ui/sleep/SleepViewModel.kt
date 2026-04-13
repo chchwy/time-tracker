@@ -30,6 +30,7 @@ data class SleepFormState(
     val childInterrupted: Boolean = false,
     val usedComputerBeforeBed: Boolean = false,
     val readBookBeforeBed: Boolean = false,
+    val bookTitleBeforeBed: String = "",
     val chattedWithWife: Boolean = false,
     val stayUpLateReason: String = "",
     val morningEnergyIndex: Int = 7,
@@ -92,6 +93,7 @@ class SleepViewModel @Inject constructor(
                         childInterrupted = record.childInterrupted ?: false,
                         usedComputerBeforeBed = record.usedComputerBeforeBed ?: false,
                         readBookBeforeBed = record.readBookBeforeBed ?: false,
+                        bookTitleBeforeBed = record.bookTitleBeforeBed ?: "",
                         chattedWithWife = record.chattedWithWife ?: false,
                         stayUpLateReason = record.stayUpLateReason ?: "",
                         morningEnergyIndex = record.morningEnergyIndex ?: 7,
@@ -123,6 +125,10 @@ class SleepViewModel @Inject constructor(
 
     fun toggleReadBook() {
         _form.update { it.copy(readBookBeforeBed = !it.readBookBeforeBed) }
+    }
+
+    fun updateBookTitleBeforeBed(title: String) {
+        _form.update { it.copy(bookTitleBeforeBed = title) }
     }
 
     fun toggleChattedWithWife() {
@@ -163,6 +169,7 @@ class SleepViewModel @Inject constructor(
                 childInterrupted = state.childInterrupted,
                 usedComputerBeforeBed = state.usedComputerBeforeBed,
                 readBookBeforeBed = state.readBookBeforeBed,
+                bookTitleBeforeBed = state.bookTitleBeforeBed.takeIf { state.readBookBeforeBed }?.ifBlank { null },
                 chattedWithWife = state.chattedWithWife,
                 stayUpLateReason = state.stayUpLateReason.ifBlank { null },
                 morningEnergyIndex = state.morningEnergyIndex

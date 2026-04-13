@@ -14,7 +14,7 @@ object CsvSerializer {
 
     const val HEADER =
         "ID,Type,Category,Title,StartTime,EndTime,DurationMinutes,Note,Tags," +
-        "IsSleep,MorningEnergy,ReadBook,UsedComputer,ChattedWithWife,ChildInterrupted,StayUpLateReason"
+        "IsSleep,MorningEnergy,ReadBook,UsedComputer,ChattedWithWife,ChildInterrupted,StayUpLateReason,BookTitleBeforeBed"
 
     // ── Export ────────────────────────────────────────────────────────────
 
@@ -34,6 +34,7 @@ object CsvSerializer {
             val title = (r.title ?: "").csvEscape()
             val note = (r.note ?: "").csvEscape()
             val reason = (r.stayUpLateReason ?: "").csvEscape()
+            val bookTitleBeforeBed = (r.bookTitleBeforeBed ?: "").csvEscape()
 
             sb.append("${r.id},")
             sb.append("${r.type},")
@@ -50,7 +51,8 @@ object CsvSerializer {
             sb.append("${r.usedComputerBeforeBed ?: ""},")
             sb.append("${r.chattedWithWife ?: ""},")
             sb.append("${r.childInterrupted ?: ""},")
-            sb.append("\"${reason}\"\n")
+            sb.append("\"${reason}\",")
+            sb.append("\"${bookTitleBeforeBed}\"\n")
         }
         return sb.toString()
     }
@@ -138,6 +140,7 @@ object CsvSerializer {
         const val CHATTED = 13
         const val CHILD_INTERRUPTED = 14
         const val STAY_UP_REASON = 15
+        const val BOOK_TITLE_BEFORE_BED = 16
         const val MIN_FIELDS = 16
     }
 
@@ -164,7 +167,8 @@ object CsvSerializer {
                 usedComputerBeforeBed = fields[Col.USED_COMPUTER].trim().toBooleanStrictOrNull(),
                 chattedWithWife = fields[Col.CHATTED].trim().toBooleanStrictOrNull(),
                 childInterrupted = fields[Col.CHILD_INTERRUPTED].trim().toBooleanStrictOrNull(),
-                stayUpLateReason = fields[Col.STAY_UP_REASON].trim().ifBlank { null }
+                stayUpLateReason = fields[Col.STAY_UP_REASON].trim().ifBlank { null },
+                bookTitleBeforeBed = fields.getOrNull(Col.BOOK_TITLE_BEFORE_BED)?.trim()?.ifBlank { null }
             )
         }.getOrNull()
     }

@@ -5,6 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.mattchang.timetracker.data.local.converter.Converters
 import com.mattchang.timetracker.data.local.dao.CategoryDao
@@ -25,7 +26,7 @@ import kotlinx.coroutines.launch
         TagEntity::class,
         RecordTagCrossRef::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -36,12 +37,19 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun tagDao(): TagDao
 
     companion object {
+        private val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE time_records ADD COLUMN book_title_before_bed TEXT")
+            }
+        }
+
         fun buildDatabase(context: Context): AppDatabase {
             return Room.databaseBuilder(
                 context.applicationContext,
                 AppDatabase::class.java,
                 "time_tracker.db"
             )
+                .addMigrations(MIGRATION_1_2)
                 .addCallback(SeedCallback())
                 .build()
         }

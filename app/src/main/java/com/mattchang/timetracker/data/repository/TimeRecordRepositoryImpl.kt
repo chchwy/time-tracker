@@ -84,6 +84,7 @@ class TimeRecordRepositoryImpl @Inject constructor(
             childInterrupted = record.childInterrupted,
             usedComputerBeforeBed = record.usedComputerBeforeBed,
             readBookBeforeBed = record.readBookBeforeBed,
+            bookTitleBeforeBed = record.bookTitleBeforeBed,
             chattedWithWife = record.chattedWithWife,
             stayUpLateReason = record.stayUpLateReason,
             morningEnergyIndex = record.morningEnergyIndex
@@ -105,6 +106,7 @@ class TimeRecordRepositoryImpl @Inject constructor(
             childInterrupted = childInterrupted,
             usedComputerBeforeBed = usedComputerBeforeBed,
             readBookBeforeBed = readBookBeforeBed,
+            bookTitleBeforeBed = bookTitleBeforeBed,
             chattedWithWife = chattedWithWife,
             stayUpLateReason = stayUpLateReason,
             morningEnergyIndex = morningEnergyIndex

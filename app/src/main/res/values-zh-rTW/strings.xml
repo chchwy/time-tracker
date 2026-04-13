@@ -50,6 +50,7 @@
     <string name="child_interrupted">半夜小孩干擾</string>
     <string name="used_computer">睡前有開電腦</string>
     <string name="read_book">睡前有讀書</string>
+    <string name="book_title_before_bed">睡前讀了哪一本書？</string>
     <string name="chatted_with_wife">有跟老婆聊天</string>
     <string name="stay_up_late_reason">熬夜晚睡原因</string>
     <string name="morning_energy">起床能量指數 (1-10)</string>

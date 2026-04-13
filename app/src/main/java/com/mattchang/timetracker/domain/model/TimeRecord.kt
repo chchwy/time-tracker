@@ -18,6 +18,7 @@ data class TimeRecord(
     val childInterrupted: Boolean? = null,
     val usedComputerBeforeBed: Boolean? = null,
     val readBookBeforeBed: Boolean? = null,
+    val bookTitleBeforeBed: String? = null,
     val chattedWithWife: Boolean? = null,
     val stayUpLateReason: String? = null,
     val morningEnergyIndex: Int? = null

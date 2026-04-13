@@ -126,6 +126,7 @@ fun SleepScreen(
                     onToggleChildInterrupted = viewModel::toggleChildInterrupted,
                     onToggleUsedComputer = viewModel::toggleUsedComputer,
                     onToggleReadBook = viewModel::toggleReadBook,
+                    onBookTitleBeforeBedChanged = viewModel::updateBookTitleBeforeBed,
                     onToggleChattedWithWife = viewModel::toggleChattedWithWife,
                     onStayUpLateReasonChanged = viewModel::updateStayUpLateReason,
                     onMorningEnergyChanged = viewModel::updateMorningEnergy,
@@ -151,6 +152,7 @@ private fun SleepFormTab(
     onToggleChildInterrupted: () -> Unit,
     onToggleUsedComputer: () -> Unit,
     onToggleReadBook: () -> Unit,
+    onBookTitleBeforeBedChanged: (String) -> Unit,
     onToggleChattedWithWife: () -> Unit,
     onStayUpLateReasonChanged: (String) -> Unit,
     onMorningEnergyChanged: (Int) -> Unit,
@@ -259,6 +261,17 @@ private fun SleepFormTab(
                 checked = form.readBookBeforeBed,
                 onCheckedChange = { onToggleReadBook() }
             )
+        }
+        if (form.readBookBeforeBed) {
+            item {
+                OutlinedTextField(
+                    value = form.bookTitleBeforeBed,
+                    onValueChange = onBookTitleBeforeBedChanged,
+                    label = { Text(stringResource(R.string.book_title_before_bed)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+            }
         }
         item {
             HabitToggleRow(
@@ -566,6 +579,14 @@ private fun SleepHistoryCard(record: TimeRecord) {
             if (!record.stayUpLateReason.isNullOrBlank()) {
                 Text(
                     text = "📝 ${record.stayUpLateReason}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            if (!record.bookTitleBeforeBed.isNullOrBlank()) {
+                Text(
+                    text = "📚 ${record.bookTitleBeforeBed}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

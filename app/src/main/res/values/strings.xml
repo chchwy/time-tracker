@@ -55,6 +55,7 @@
     <string name="child_interrupted">Child interrupted sleep</string>
     <string name="used_computer">Used computer before bed</string>
     <string name="read_book">Read a book before bed</string>
+    <string name="book_title_before_bed">Which book did you read?</string>
     <string name="chatted_with_wife">Chatted with wife</string>
     <string name="stay_up_late_reason">Reason for staying up late</string>
     <string name="morning_energy">Morning Energy (1-10)</string>

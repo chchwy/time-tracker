@@ -59,6 +59,9 @@ data class TimeRecordEntity(
     @ColumnInfo(name = "read_book_before_bed")
     val readBookBeforeBed: Boolean? = null,
 
+    @ColumnInfo(name = "book_title_before_bed")
+    val bookTitleBeforeBed: String? = null,
+
     @ColumnInfo(name = "chatted_with_wife")
     val chattedWithWife: Boolean? = null,
 
