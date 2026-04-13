@@ -53,6 +53,12 @@ data class DecisionInsightsUi(
     val actionItems: List<String>
 )
 
+data class BookReadEntryUi(
+    val title: String,
+    val readCount: Int,
+    val lastReadDate: java.time.LocalDate
+)
+
 data class AnalyticsUiState(
     val periodType: PeriodType = PeriodType.WEEK,
     val periodLabel: String = "",
@@ -60,7 +66,8 @@ data class AnalyticsUiState(
     val totalTrackedMinutes: Int = 0,
     val dailyAvgMinutes: Float = 0f,
     val sleepAnalytics: SleepAnalyticsUi? = null,
-    val decisionInsights: DecisionInsightsUi? = null
+    val decisionInsights: DecisionInsightsUi? = null,
+    val booksRead: List<BookReadEntryUi> = emptyList()
 )
 
 // ─── ViewModel ────────────────────────────────────────────────────────────────
@@ -159,6 +166,18 @@ class AnalyticsViewModel @Inject constructor(
 
         val decisionInsights = computeDecisionInsights(records, prevRecords)
 
+        val booksRead = periodSleep
+            .filter { !it.bookTitleBeforeBed.isNullOrBlank() }
+            .groupBy { it.bookTitleBeforeBed!! }
+            .map { (title, recs) ->
+                BookReadEntryUi(
+                    title = title,
+                    readCount = recs.size,
+                    lastReadDate = recs.maxOf { it.endTime.toLocalDate() }
+                )
+            }
+            .sortedByDescending { it.lastReadDate }
+
         AnalyticsUiState(
             periodType = type,
             periodLabel = buildPeriodLabel(type, from, to),
@@ -166,7 +185,8 @@ class AnalyticsViewModel @Inject constructor(
             totalTrackedMinutes = totalTracked,
             dailyAvgMinutes = dailyAvg,
             sleepAnalytics = computeSleepAnalytics(periodSleep),
-            decisionInsights = decisionInsights
+            decisionInsights = decisionInsights,
+            booksRead = booksRead
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AnalyticsUiState())
 

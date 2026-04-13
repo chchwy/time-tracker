@@ -95,6 +95,8 @@
     <string name="drift_alert">漂移警示</string>
     <string name="next_actions">下步建議</string>
     <string name="category_distribution">分類占比</string>
+    <string name="reading_log">讀書紀錄</string>
+    <string name="times_read">%d 次</string>
     <string name="sleep_analysis">睡眠分析</string>
     <string name="avg_sleep_duration">平均時長</string>
     <string name="no_data_for_period">這個時段沒有紀錄。\n新增時間紀錄即可查看分析。</string>

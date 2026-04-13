@@ -325,6 +325,40 @@ fun AnalyticsScreen(
                     }
                 }
             }
+
+            // ── Reading log ───────────────────────────────────────────────
+            if (uiState.booksRead.isNotEmpty()) {
+                item {
+                    SectionCard(title = stringResource(R.string.reading_log)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            uiState.booksRead.forEach { book ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Book,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                    Text(
+                                        text = book.title,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.times_read, book.readCount),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         item { Spacer(Modifier.height(16.dp)) }
