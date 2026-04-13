@@ -14,6 +14,7 @@ import com.mattchang.timetracker.ui.analytics.AnalyticsScreen
 import com.mattchang.timetracker.ui.records.RecordListScreen
 import com.mattchang.timetracker.ui.sleep.SleepScreen
 import com.mattchang.timetracker.ui.timer.TimerScreen
+import com.mattchang.timetracker.ui.settings.SettingsScreen
 
 @Composable
 fun AppNavGraph() {
@@ -31,6 +32,9 @@ fun AppNavGraph() {
                 RecordListScreen(
                     onRecordClick = { recordId ->
                         navController.navigate("edit_record/$recordId")
+                    },
+                    onSleepRecordClick = { recordId ->
+                        navController.navigate("edit_sleep/$recordId")
                     },
                     onNavigateToSettings = {
                         navController.navigate(Screen.Settings.route)
@@ -64,11 +68,19 @@ fun AppNavGraph() {
             composable(Screen.Sleep.route) {
                 SleepScreen()
             }
+            composable(
+                route = "edit_sleep/{recordId}",
+                arguments = listOf(navArgument("recordId") { type = NavType.LongType })
+            ) {
+                SleepScreen(
+                    onSaved = { navController.popBackStack() }
+                )
+            }
             composable(Screen.Analytics.route) {
                 AnalyticsScreen()
             }
             composable(Screen.Settings.route) {
-                com.mattchang.timetracker.ui.settings.SettingsScreen()
+                SettingsScreen()
             }
         }
     }

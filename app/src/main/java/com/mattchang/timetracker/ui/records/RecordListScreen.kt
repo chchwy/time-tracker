@@ -48,6 +48,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun RecordListScreen(
     onRecordClick: (Long) -> Unit = {},
+    onSleepRecordClick: (Long) -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
     viewModel: RecordListViewModel = hiltViewModel()
 ) {
@@ -100,7 +101,10 @@ fun RecordListScreen(
                             SwipeToDismissItem(
                                 record = record,
                                 categoryMap = categoryMap,
-                                onClick = { onRecordClick(record.id) },
+                                onClick = {
+                                    if (record.isSleep) onSleepRecordClick(record.id)
+                                    else onRecordClick(record.id)
+                                },
                                 onDelete = {
                                     viewModel.deleteRecord(record)
                                 },

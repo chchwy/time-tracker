@@ -66,6 +66,7 @@ import kotlin.math.roundToInt
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SleepScreen(
+    onSaved: (() -> Unit)? = null,
     viewModel: SleepViewModel = hiltViewModel()
 ) {
     val form by viewModel.form.collectAsStateWithLifecycle()
@@ -80,8 +81,13 @@ fun SleepScreen(
         viewModel.events.collect { event ->
             when (event) {
                 SleepEvent.SaveSuccess -> {
-                    selectedTab = 1   // jump to history after save
-                    snackbarHostState.showSnackbar(savedMsg)
+                    if (onSaved != null) {
+                        // In edit mode: navigate back after saving
+                        onSaved()
+                    } else {
+                        selectedTab = 1   // jump to history after save
+                        snackbarHostState.showSnackbar(savedMsg)
+                    }
                 }
             }
         }

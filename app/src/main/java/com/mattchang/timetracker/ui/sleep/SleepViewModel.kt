@@ -1,8 +1,8 @@
 package com.mattchang.timetracker.ui.sleep
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mattchang.timetracker.domain.model.Category
 import com.mattchang.timetracker.domain.model.RecordType
 import com.mattchang.timetracker.domain.model.TimeRecord
 import com.mattchang.timetracker.domain.repository.CategoryRepository
@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -32,7 +33,9 @@ data class SleepFormState(
     val chattedWithWife: Boolean = false,
     val stayUpLateReason: String = "",
     val morningEnergyIndex: Int = 7,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val isEditing: Boolean = false,
+    val editingRecordId: Long = 0
 ) {
     val durationMinutes: Int
         get() {
@@ -55,7 +58,8 @@ sealed class SleepEvent {
 @HiltViewModel
 class SleepViewModel @Inject constructor(
     private val timeRecordRepository: TimeRecordRepository,
-    private val categoryRepository: CategoryRepository
+    private val categoryRepository: CategoryRepository,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val _form = MutableStateFlow(SleepFormState())
@@ -67,12 +71,37 @@ class SleepViewModel @Inject constructor(
     val sleepRecords: StateFlow<List<TimeRecord>> = timeRecordRepository.getSleepRecords()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val categories: StateFlow<List<Category>> = categoryRepository.getAllCategories()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
     val insights: StateFlow<SleepInsights> = sleepRecords
         .map { records -> computeInsights(records) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SleepInsights())
+
+    init {
+        val recordId = savedStateHandle.get<Long>("recordId") ?: 0L
+        if (recordId > 0) {
+            loadRecord(recordId)
+        }
+    }
+
+    private fun loadRecord(id: Long) {
+        viewModelScope.launch {
+            timeRecordRepository.getRecordById(id)?.let { record ->
+                _form.update {
+                    it.copy(
+                        sleepTime = record.startTime,
+                        wakeTime = record.endTime,
+                        childInterrupted = record.childInterrupted ?: false,
+                        usedComputerBeforeBed = record.usedComputerBeforeBed ?: false,
+                        readBookBeforeBed = record.readBookBeforeBed ?: false,
+                        chattedWithWife = record.chattedWithWife ?: false,
+                        stayUpLateReason = record.stayUpLateReason ?: "",
+                        morningEnergyIndex = record.morningEnergyIndex ?: 7,
+                        isEditing = true,
+                        editingRecordId = record.id
+                    )
+                }
+            }
+        }
+    }
 
     // ── Form Updaters ────────────────────────────────────────────────────
 
@@ -118,11 +147,14 @@ class SleepViewModel @Inject constructor(
             return
         }
 
-        // Find sleep category by icon name "bedtime" (seeded in AppDatabase)
-        val sleepCategory = categories.value.find { it.icon == "bedtime" }
-
         viewModelScope.launch {
+            // Fetch categories fresh from the repository to avoid race conditions
+            // with WhileSubscribed StateFlow that may not have started collecting yet
+            val allCategories = categoryRepository.getAllCategories().first()
+            val sleepCategory = allCategories.find { it.icon == "bedtime" }
+
             val record = TimeRecord(
+                id = if (state.isEditing) state.editingRecordId else 0,
                 type = RecordType.SLEEP,
                 categoryId = sleepCategory?.id,
                 startTime = state.sleepTime,
@@ -135,7 +167,12 @@ class SleepViewModel @Inject constructor(
                 stayUpLateReason = state.stayUpLateReason.ifBlank { null },
                 morningEnergyIndex = state.morningEnergyIndex
             )
-            timeRecordRepository.insertRecord(record, emptyList())
+
+            if (state.isEditing) {
+                timeRecordRepository.updateRecord(record, emptyList())
+            } else {
+                timeRecordRepository.insertRecord(record, emptyList())
+            }
 
             // Reset to fresh form (keep default times for convenience)
             _form.value = SleepFormState()
