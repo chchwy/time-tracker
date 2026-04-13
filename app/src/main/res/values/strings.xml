@@ -77,6 +77,7 @@
     <string name="tag_name">Tag name</string>
 
     <!-- DateTime -->
+    <string name="date">Date</string>
     <string name="time">Time</string>
     <string name="edit_record_title">Edit Record</string>
     <string name="end_before_start_error">End time must be after start time</string>

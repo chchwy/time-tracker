@@ -151,3 +151,124 @@ fun DateTimeField(
         )
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DateField(
+    label: String,
+    dateTime: LocalDateTime,
+    onDateTimeChanged: (LocalDateTime) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    val dateFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd")
+
+    Box(modifier = modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = dateTime.format(dateFormatter),
+            onValueChange = {},
+            label = { Text(label) },
+            readOnly = true,
+            trailingIcon = {
+                Icon(Icons.Default.CalendarToday, contentDescription = null)
+            },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .clickable { showDatePicker = true }
+        )
+    }
+
+    if (showDatePicker) {
+        val initialMillis = dateTime.toLocalDate()
+            .atStartOfDay(ZoneOffset.UTC)
+            .toInstant()
+            .toEpochMilli()
+        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialMillis)
+
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val newDate = Instant.ofEpochMilli(millis)
+                            .atZone(ZoneOffset.UTC)
+                            .toLocalDate()
+                        onDateTimeChanged(LocalDateTime.of(newDate, dateTime.toLocalTime()))
+                    }
+                    showDatePicker = false
+                }) {
+                    Text(stringResource(R.string.save))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TimeField(
+    label: String,
+    dateTime: LocalDateTime,
+    onDateTimeChanged: (LocalDateTime) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var showTimePicker by remember { mutableStateOf(false) }
+    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+
+    Box(modifier = modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = dateTime.format(timeFormatter),
+            onValueChange = {},
+            label = { Text(label) },
+            readOnly = true,
+            trailingIcon = {
+                Icon(Icons.Default.AccessTime, contentDescription = null)
+            },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .clickable { showTimePicker = true }
+        )
+    }
+
+    if (showTimePicker) {
+        val timePickerState = rememberTimePickerState(
+            initialHour = dateTime.hour,
+            initialMinute = dateTime.minute,
+            is24Hour = true
+        )
+
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    val newTime = LocalTime.of(timePickerState.hour, timePickerState.minute)
+                    onDateTimeChanged(LocalDateTime.of(dateTime.toLocalDate(), newTime))
+                    showTimePicker = false
+                }) {
+                    Text(stringResource(R.string.save))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+            text = {
+                TimePicker(state = timePickerState)
+            }
+        )
+    }
+}

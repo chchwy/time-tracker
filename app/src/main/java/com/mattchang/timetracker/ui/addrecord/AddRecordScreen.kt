@@ -30,7 +30,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mattchang.timetracker.R
 import com.mattchang.timetracker.ui.components.AutoCompleteTextField
 import com.mattchang.timetracker.ui.components.CategorySelector
-import com.mattchang.timetracker.ui.components.DateTimeField
+import com.mattchang.timetracker.ui.components.DateField
+import com.mattchang.timetracker.ui.components.TimeField
 import com.mattchang.timetracker.ui.components.DurationText
 import com.mattchang.timetracker.ui.components.TagSelector
 
@@ -103,22 +104,48 @@ fun AddRecordScreen(
 
             HorizontalDivider()
 
+            DateField(
+                label = stringResource(R.string.date),
+                dateTime = uiState.startTime,
+                onDateTimeChanged = viewModel::updateDate,
+                modifier = Modifier.fillMaxWidth()
+            )
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                DateTimeField(
+                TimeField(
                     label = stringResource(R.string.start_time),
                     dateTime = uiState.startTime,
                     onDateTimeChanged = viewModel::updateStartTime,
                     modifier = Modifier.weight(1f)
                 )
-                DateTimeField(
+                TimeField(
                     label = stringResource(R.string.end_time),
                     dateTime = uiState.endTime,
                     onDateTimeChanged = viewModel::updateEndTime,
                     modifier = Modifier.weight(1f)
                 )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            ) {
+                androidx.compose.material3.OutlinedButton(
+                    onClick = { viewModel.addDuration(10) },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("+10m")
+                }
+                androidx.compose.material3.OutlinedButton(
+                    onClick = { viewModel.addDuration(30) },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("+30m")
+                }
             }
 
             Row(

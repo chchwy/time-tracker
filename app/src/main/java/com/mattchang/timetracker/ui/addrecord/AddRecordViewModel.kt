@@ -28,8 +28,8 @@ data class AddRecordUiState(
     val title: String = "",
     val selectedCategoryId: Long? = null,
     val selectedTagIds: Set<Long> = emptySet(),
-    val startTime: LocalDateTime = LocalDateTime.now().minusHours(1),
-    val endTime: LocalDateTime = LocalDateTime.now(),
+    val startTime: LocalDateTime = LocalDateTime.now().withSecond(0).withNano(0),
+    val endTime: LocalDateTime = LocalDateTime.now().withSecond(0).withNano(0),
     val note: String = "",
     val isEditing: Boolean = false,
     val editingRecordId: Long = 0,
@@ -130,6 +130,22 @@ class AddRecordViewModel @Inject constructor(
         viewModelScope.launch {
             val tagId = tagRepository.insertTag(Tag(name = name))
             _uiState.update { it.copy(selectedTagIds = it.selectedTagIds + tagId) }
+        }
+    }
+
+    fun updateDate(newDateTime: LocalDateTime) {
+        _uiState.update { state ->
+            val newStart = LocalDateTime.of(newDateTime.toLocalDate(), state.startTime.toLocalTime())
+            val duration = Duration.between(state.startTime, state.endTime)
+            val newEnd = newStart.plus(duration) // Keep duration same when date changes
+            state.copy(startTime = newStart, endTime = newEnd, errorMessage = null)
+        }
+    }
+
+    fun addDuration(minutes: Long) {
+        _uiState.update { state ->
+            val newEndTime = state.endTime.plusMinutes(minutes)
+            state.copy(endTime = newEndTime, errorMessage = null)
         }
     }
 
