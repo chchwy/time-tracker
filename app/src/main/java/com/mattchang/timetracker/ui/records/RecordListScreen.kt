@@ -22,7 +22,6 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
@@ -82,17 +81,8 @@ fun RecordListScreen(
         groupedRecords.filter { (date, _) -> !date.isBefore(weekStart) && !date.isAfter(weekEnd) }
     }
 
-    Scaffold(
-        snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState)
-        }
-    ) { paddingValues ->
-        Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-            Text(
-                text = stringResource(R.string.tab_records),
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 4.dp)
-            )
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
             WeekNavigationHeader(
                 weekStart = weekStart,
                 weekEnd = weekEnd,
@@ -131,6 +121,10 @@ fun RecordListScreen(
                 }
             }
         }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 
