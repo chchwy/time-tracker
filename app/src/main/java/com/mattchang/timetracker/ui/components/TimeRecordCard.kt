@@ -89,7 +89,12 @@ fun TimeRecordCard(
                         )
                     }
                     Text(
-                        text = record.title ?: category?.name ?: record.type.name,
+                        text = when {
+                            category != null && !record.title.isNullOrBlank() -> "${category.name}: ${record.title}"
+                            category != null -> category.name
+                            !record.title.isNullOrBlank() -> record.title!!
+                            else -> record.type.name
+                        },
                         style = MaterialTheme.typography.titleSmall
                     )
                 }
