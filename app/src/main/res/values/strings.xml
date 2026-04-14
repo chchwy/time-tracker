@@ -31,6 +31,8 @@
     <string name="coming_soon">Coming Soon</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
+    <string name="today">Today</string>
+    <string name="yesterday">Yesterday</string>
     <string name="delete">Delete</string>
     <string name="edit">Edit</string>
 
