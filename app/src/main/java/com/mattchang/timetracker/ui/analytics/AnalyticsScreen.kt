@@ -409,7 +409,7 @@ private fun LegendRow(
             maxLines = 1
         )
         Text(
-            text = formatMinutes(minutes),
+            text = "${formatMinutes(minutes)} · ${(fraction * 100).toInt()}%",
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 10.sp
