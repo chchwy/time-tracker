@@ -109,6 +109,7 @@
     <string name="drift_alert">Drift Alert</string>
     <string name="next_actions">Next Actions</string>
     <string name="category_distribution">By Category</string>
+    <string name="tag_duration">By Tag</string>
     <string name="reading_log">Reading Log</string>
     <string name="times_read">%d×</string>
     <string name="sleep_analysis">Sleep Analysis</string>

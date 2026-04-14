@@ -175,6 +175,35 @@ fun AnalyticsScreen(
                 }
             }
 
+            // ── Tag summary ───────────────────────────────────────────────
+            if (uiState.tagSummary.isNotEmpty()) {
+                item {
+                    SectionCard(title = stringResource(R.string.tag_duration)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            uiState.tagSummary.forEach { tag ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = tag.name,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    Text(
+                                        text = formatMinutes(tag.totalMinutes),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        fontSize = 10.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             // ── Decision panel ────────────────────────────────────────────
             if (uiState.elapsedMinutes > 0) {
                 item {

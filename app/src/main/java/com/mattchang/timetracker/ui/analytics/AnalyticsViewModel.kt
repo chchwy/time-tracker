@@ -43,6 +43,11 @@ data class SleepAnalyticsUi(
 )
 
 
+data class TagSummaryUi(
+    val name: String,
+    val totalMinutes: Int
+)
+
 data class BookReadEntryUi(
     val title: String,
     val readCount: Int,
@@ -53,6 +58,7 @@ data class AnalyticsUiState(
     val periodType: PeriodType = PeriodType.WEEK,
     val periodLabel: String = "",
     val categorySummary: List<CategorySummaryUi> = emptyList(),
+    val tagSummary: List<TagSummaryUi> = emptyList(),
     val totalTrackedMinutes: Int = 0,
     val elapsedMinutes: Int = 0,
     val dailyAvgMinutes: Float = 0f,
@@ -183,6 +189,17 @@ class AnalyticsViewModel @Inject constructor(
             )
         }
 
+        // ── Tag summary ───────────────────────────────────────────────────
+        val tagMinutes = mutableMapOf<String, Int>()
+        records.filter { it.durationMinutes > 0 && !it.isSleep }.forEach { rec ->
+            rec.tags.forEach { tag ->
+                tagMinutes[tag.name] = (tagMinutes[tag.name] ?: 0) + rec.durationMinutes
+            }
+        }
+        val tagSummary = tagMinutes.map { (name, minutes) ->
+            TagSummaryUi(name = name, totalMinutes = minutes)
+        }.sortedByDescending { it.totalMinutes }
+
         // ── Sleep analytics (period-scoped) ───────────────────────────────
         val periodSleep = sleepRecs.filter { rec ->
             val ms = rec.startTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
@@ -208,6 +225,7 @@ class AnalyticsViewModel @Inject constructor(
             periodType = type,
             periodLabel = buildPeriodLabel(type, from, to),
             categorySummary = categorySummary,
+            tagSummary = tagSummary,
             totalTrackedMinutes = effectiveTracked,
             elapsedMinutes = elapsedMinutes,
             dailyAvgMinutes = dailyAvg,
