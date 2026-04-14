@@ -11,6 +11,7 @@ import com.mattchang.timetracker.domain.repository.TimeRecordRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import javax.inject.Inject
@@ -45,6 +46,12 @@ class TimeRecordRepositoryImpl @Inject constructor(
 
     override fun getRecentBedtimeBookTitles(): Flow<List<String>> {
         return timeRecordDao.getRecentBedtimeBookTitles()
+    }
+
+    override suspend fun getLatestEndTimeOnDate(date: LocalDate): LocalDateTime? {
+        val dayStart = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val dayEnd = date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        return timeRecordDao.getLatestEndTimeOnDate(dayStart, dayEnd)?.let { millisToLocalDateTime(it) }
     }
 
     override suspend fun getRecordById(id: Long): TimeRecord? {

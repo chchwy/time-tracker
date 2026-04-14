@@ -153,11 +153,20 @@ class AddRecordViewModel @Inject constructor(
     }
 
     fun updateDate(newDateTime: LocalDateTime) {
-        _uiState.update { state ->
-            val newStart = LocalDateTime.of(newDateTime.toLocalDate(), state.startTime.toLocalTime())
-            val duration = Duration.between(state.startTime, state.endTime)
-            val newEnd = newStart.plus(duration) // Keep duration same when date changes
-            state.copy(startTime = newStart, endTime = newEnd, errorMessage = null)
+        val date = newDateTime.toLocalDate()
+        viewModelScope.launch {
+            val latestEnd = timeRecordRepository.getLatestEndTimeOnDate(date)
+            if (latestEnd != null) {
+                val now = LocalDateTime.now().withSecond(0).withNano(0)
+                val snapped = if (latestEnd.isAfter(now)) now else latestEnd
+                _uiState.update { it.copy(startTime = snapped, endTime = snapped, errorMessage = null) }
+            } else {
+                _uiState.update { state ->
+                    val newStart = LocalDateTime.of(date, state.startTime.toLocalTime())
+                    val duration = Duration.between(state.startTime, state.endTime)
+                    state.copy(startTime = newStart, endTime = newStart.plus(duration), errorMessage = null)
+                }
+            }
         }
     }
 

@@ -42,6 +42,9 @@ interface TimeRecordDao {
     )
     fun getCategorySummary(from: Long, to: Long): Flow<List<CategorySummary>>
 
+    @Query("SELECT MAX(end_time) FROM time_records WHERE end_time >= :dayStart AND end_time < :dayEnd AND type != 'SLEEP'")
+    suspend fun getLatestEndTimeOnDate(dayStart: Long, dayEnd: Long): Long?
+
     @Query("SELECT DISTINCT title FROM time_records WHERE title IS NOT NULL AND title != '' ORDER BY start_time DESC LIMIT 20")
     fun getRecentTitles(): Flow<List<String>>
 
