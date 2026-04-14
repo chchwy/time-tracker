@@ -44,13 +44,9 @@ fun TimeRecordCard(
     Card(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
-        colors = if (record.isSleep) {
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
-            )
-        } else {
-            CardDefaults.cardColors()
-        }
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
+        )
     ) {
         Row(
             modifier = Modifier
