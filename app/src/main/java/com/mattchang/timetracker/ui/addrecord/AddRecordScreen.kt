@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -22,6 +23,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import java.time.LocalDate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -104,12 +106,29 @@ fun AddRecordScreen(
 
             HorizontalDivider()
 
-            DateField(
-                label = stringResource(R.string.date),
-                dateTime = uiState.startTime,
-                onDateTimeChanged = viewModel::updateDate,
-                modifier = Modifier.fillMaxWidth()
-            )
+            val today = LocalDate.now()
+            val yesterday = today.minusDays(1)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                DateField(
+                    label = stringResource(R.string.date),
+                    dateTime = uiState.startTime,
+                    onDateTimeChanged = viewModel::updateDate,
+                    modifier = Modifier.weight(1f)
+                )
+                FilterChip(
+                    selected = uiState.startTime.toLocalDate() == today,
+                    onClick = { viewModel.updateDate(today.atStartOfDay()) },
+                    label = { Text(stringResource(R.string.today)) }
+                )
+                FilterChip(
+                    selected = uiState.startTime.toLocalDate() == yesterday,
+                    onClick = { viewModel.updateDate(yesterday.atStartOfDay()) },
+                    label = { Text(stringResource(R.string.yesterday)) }
+                )
+            }
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
