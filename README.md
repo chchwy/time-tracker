@@ -75,5 +75,3 @@ The analytics page gives an honest picture of how your time is spent:
 - [x] Day / Week / Month views on Records and Analytics
 - [x] CSV export & import
 - [x] Traditional Chinese localization
-- [ ] Home screen widget for one-tap logging
-- [ ] Android UsageStats integration for passive screen-time tracking
