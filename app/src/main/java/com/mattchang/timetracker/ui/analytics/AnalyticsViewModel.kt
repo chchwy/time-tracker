@@ -117,7 +117,18 @@ class AnalyticsViewModel @Inject constructor(
         val catMap = cats.associateBy { it.id }
 
         // ── Totals ────────────────────────────────────────────────────────
-        val totalTracked = records.sumOf { it.durationMinutes }
+        // Clip each record's duration to the period boundary — a record that
+        // starts at 23:40 should only contribute 20 min to that day, not its
+        // full overnight duration.
+        val fromMs = from.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val toMs = to.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+        fun clippedMinutes(rec: com.mattchang.timetracker.domain.model.TimeRecord): Int {
+            val recStartMs = rec.startTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            return minOf(rec.durationMinutes, ((toMs - recStartMs) / 60000L).toInt()).coerceAtLeast(0)
+        }
+
+        val totalTracked = records.sumOf { clippedMinutes(it) }
         val dayCount = when (type) {
             PeriodType.DAY -> 1
             PeriodType.WEEK -> 7
@@ -140,15 +151,15 @@ class AnalyticsViewModel @Inject constructor(
             }
             total
         }
-        val fromMs = from.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-        val toMs = to.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-
         // ── Category summary ──────────────────────────────────────────────
         // Start with minutes from records that fall within the period
         val minutesByCatId = mutableMapOf<Long?, Int>()
         records
             .filter { it.categoryId != null && it.durationMinutes > 0 }
-            .forEach { rec -> minutesByCatId[rec.categoryId] = (minutesByCatId[rec.categoryId] ?: 0) + rec.durationMinutes }
+            .forEach { rec ->
+                val mins = clippedMinutes(rec)
+                if (mins > 0) minutesByCatId[rec.categoryId] = (minutesByCatId[rec.categoryId] ?: 0) + mins
+            }
 
         // Add overlap from sleep that started before the period but ends within it
         // (e.g. sleep started 23:40 yesterday, woke up 07:00 today)
@@ -192,8 +203,9 @@ class AnalyticsViewModel @Inject constructor(
         // ── Tag summary ───────────────────────────────────────────────────
         val tagMinutes = mutableMapOf<String, Int>()
         records.filter { it.durationMinutes > 0 && !it.isSleep }.forEach { rec ->
-            rec.tags.forEach { tag ->
-                tagMinutes[tag.name] = (tagMinutes[tag.name] ?: 0) + rec.durationMinutes
+            val mins = clippedMinutes(rec)
+            if (mins > 0) rec.tags.forEach { tag ->
+                tagMinutes[tag.name] = (tagMinutes[tag.name] ?: 0) + mins
             }
         }
         val tagSummary = tagMinutes.map { (name, minutes) ->
