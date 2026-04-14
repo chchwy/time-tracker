@@ -16,9 +16,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlin.math.abs
-import kotlin.math.roundToInt
-import kotlin.math.sqrt
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.ZoneId
@@ -33,7 +30,8 @@ data class CategorySummaryUi(
     val name: String,
     val colorHex: String,
     val totalMinutes: Int,
-    val fraction: Float
+    val fraction: Float,
+    val isUnknown: Boolean = false
 )
 
 data class SleepAnalyticsUi(
@@ -44,14 +42,6 @@ data class SleepAnalyticsUi(
     val chattingRate: Float
 )
 
-data class DecisionInsightsUi(
-    val peakStartHour: Int,
-    val peakWindowMinutes: Int,
-    val peakConfidence: Float,
-    val consistencyScore: Int?,
-    val driftHours: Float?,
-    val actionItems: List<String>
-)
 
 data class BookReadEntryUi(
     val title: String,
@@ -64,9 +54,9 @@ data class AnalyticsUiState(
     val periodLabel: String = "",
     val categorySummary: List<CategorySummaryUi> = emptyList(),
     val totalTrackedMinutes: Int = 0,
+    val elapsedMinutes: Int = 0,
     val dailyAvgMinutes: Float = 0f,
     val sleepAnalytics: SleepAnalyticsUi? = null,
-    val decisionInsights: DecisionInsightsUi? = null,
     val booksRead: List<BookReadEntryUi> = emptyList()
 )
 
@@ -107,45 +97,18 @@ class AnalyticsViewModel @Inject constructor(
     private val categories: StateFlow<List<Category>> = categoryRepository.getAllCategories()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    private val previousPeriodRecords: StateFlow<List<TimeRecord>> = periodBounds
-        .flatMapLatest { (from, _) ->
-            val type = _periodType.value
-            val (prevFrom, prevTo) = previousDateRange(type, from)
-            timeRecordRepository.getRecordsBetween(
-                prevFrom.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli(),
-                prevTo.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-            )
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
     private val sleepRecords: StateFlow<List<TimeRecord>> = timeRecordRepository.getSleepRecords()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val uiState: StateFlow<AnalyticsUiState> = combine(
         periodBounds,
         periodRecords,
-        previousPeriodRecords,
         categories,
         sleepRecords
-    ) { bounds, records, prevRecords, cats, sleepRecs ->
+    ) { bounds, records, cats, sleepRecs ->
         val type = _periodType.value
         val (from, to) = bounds
         val catMap = cats.associateBy { it.id }
-
-        // ── Category summary ──────────────────────────────────────────────
-        val grouped = records
-            .filter { it.categoryId != null && it.durationMinutes > 0 }
-            .groupBy { it.categoryId }
-        val totalMins = grouped.values.sumOf { recs -> recs.sumOf { it.durationMinutes } }
-        val categorySummary = grouped.map { (catId, recs) ->
-            val cat = catMap[catId]
-            val minutes = recs.sumOf { it.durationMinutes }
-            CategorySummaryUi(
-                name = cat?.name ?: "Other",
-                colorHex = cat?.colorHex ?: "#9E9E9E",
-                totalMinutes = minutes,
-                fraction = if (totalMins > 0) minutes.toFloat() / totalMins else 0f
-            )
-        }.sortedByDescending { it.totalMinutes }
 
         // ── Totals ────────────────────────────────────────────────────────
         val totalTracked = records.sumOf { it.durationMinutes }
@@ -154,17 +117,77 @@ class AnalyticsViewModel @Inject constructor(
             PeriodType.WEEK -> 7
             PeriodType.MONTH -> from.month.length(from.isLeapYear)
         }
-        val dailyAvg = if (dayCount > 0) totalTracked.toFloat() / dayCount else 0f
-
-        // ── Sleep analytics (period-scoped) ───────────────────────────────
+        // Only count time that has already elapsed — past days get 1440 min,
+        // today gets minutes since midnight, future days contribute 0.
+        val today = LocalDate.now()
+        val nowMinuteOfDay = java.time.LocalTime.now().hour * 60 + java.time.LocalTime.now().minute
+        val elapsedMinutes = run {
+            var total = 0
+            var day = from
+            while (day.isBefore(to)) {
+                total += when {
+                    day.isBefore(today) -> 24 * 60
+                    day.isEqual(today) -> nowMinuteOfDay
+                    else -> 0
+                }
+                day = day.plusDays(1)
+            }
+            total
+        }
         val fromMs = from.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
         val toMs = to.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+        // ── Category summary ──────────────────────────────────────────────
+        // Start with minutes from records that fall within the period
+        val minutesByCatId = mutableMapOf<Long?, Int>()
+        records
+            .filter { it.categoryId != null && it.durationMinutes > 0 }
+            .forEach { rec -> minutesByCatId[rec.categoryId] = (minutesByCatId[rec.categoryId] ?: 0) + rec.durationMinutes }
+
+        // Add overlap from sleep that started before the period but ends within it
+        // (e.g. sleep started 23:40 yesterday, woke up 07:00 today)
+        var overnightMinutes = 0
+        sleepRecs.filter { rec ->
+            val startMs = rec.startTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            val endMs = rec.endTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            startMs < fromMs && endMs > fromMs
+        }.forEach { rec ->
+            val endMs = rec.endTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            val overlapMins = ((minOf(endMs, toMs) - fromMs) / 60000L).toInt().coerceAtLeast(0)
+            if (overlapMins > 0) {
+                minutesByCatId[rec.categoryId] = (minutesByCatId[rec.categoryId] ?: 0) + overlapMins
+                overnightMinutes += overlapMins
+            }
+        }
+
+        val categorySummary = minutesByCatId.map { (catId, minutes) ->
+            val cat = catMap[catId]
+            CategorySummaryUi(
+                name = cat?.name ?: "Other",
+                colorHex = cat?.colorHex ?: "#9E9E9E",
+                totalMinutes = minutes,
+                fraction = if (elapsedMinutes > 0) minutes.toFloat() / elapsedMinutes else 0f
+            )
+        }.sortedByDescending { it.totalMinutes }.toMutableList()
+
+        val unknownMinutes = (elapsedMinutes - totalTracked - overnightMinutes).coerceAtLeast(0)
+        if (unknownMinutes > 0) {
+            categorySummary.add(
+                CategorySummaryUi(
+                    name = "",
+                    colorHex = "#BDBDBD",
+                    totalMinutes = unknownMinutes,
+                    fraction = unknownMinutes.toFloat() / elapsedMinutes,
+                    isUnknown = true
+                )
+            )
+        }
+
+        // ── Sleep analytics (period-scoped) ───────────────────────────────
         val periodSleep = sleepRecs.filter { rec ->
             val ms = rec.startTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
             ms in fromMs until toMs
         }
-
-        val decisionInsights = computeDecisionInsights(records, prevRecords)
 
         val booksRead = periodSleep
             .filter { !it.bookTitleBeforeBed.isNullOrBlank() }
@@ -178,14 +201,17 @@ class AnalyticsViewModel @Inject constructor(
             }
             .sortedByDescending { it.lastReadDate }
 
+        val effectiveTracked = totalTracked + overnightMinutes
+        val dailyAvg = if (dayCount > 0) effectiveTracked.toFloat() / dayCount else 0f
+
         AnalyticsUiState(
             periodType = type,
             periodLabel = buildPeriodLabel(type, from, to),
             categorySummary = categorySummary,
-            totalTrackedMinutes = totalTracked,
+            totalTrackedMinutes = effectiveTracked,
+            elapsedMinutes = elapsedMinutes,
             dailyAvgMinutes = dailyAvg,
             sleepAnalytics = computeSleepAnalytics(periodSleep),
-            decisionInsights = decisionInsights,
             booksRead = booksRead
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AnalyticsUiState())
@@ -270,117 +296,4 @@ class AnalyticsViewModel @Inject constructor(
         )
     }
 
-    private fun computeDecisionInsights(
-        currentRecords: List<TimeRecord>,
-        previousRecords: List<TimeRecord>
-    ): DecisionInsightsUi? {
-        val focusRecords = currentRecords.filter { !it.isSleep && it.durationMinutes > 0 }
-        if (focusRecords.isEmpty()) return null
-
-        val currentHourBuckets = buildHourBuckets(focusRecords)
-        val (peakStartHour, peakWindowMinutes) = peakTwoHourWindow(currentHourBuckets)
-        val totalFocusMinutes = focusRecords.sumOf { it.durationMinutes }
-        val peakConfidence = if (totalFocusMinutes > 0) {
-            peakWindowMinutes.toFloat() / totalFocusMinutes
-        } else {
-            0f
-        }
-
-        val consistencyScore = computeConsistencyScore(focusRecords)
-        val previousFocusRecords = previousRecords.filter { !it.isSleep && it.durationMinutes > 0 }
-        val currentMedianHour = weightedMedianHour(currentHourBuckets)
-        val previousMedianHour = weightedMedianHour(buildHourBuckets(previousFocusRecords))
-        val driftHours = if (previousMedianHour != null && currentMedianHour != null) {
-            currentMedianHour - previousMedianHour
-        } else {
-            null
-        }
-
-        return DecisionInsightsUi(
-            peakStartHour = peakStartHour,
-            peakWindowMinutes = peakWindowMinutes,
-            peakConfidence = peakConfidence,
-            consistencyScore = consistencyScore,
-            driftHours = driftHours,
-            actionItems = buildActionItems(peakStartHour, consistencyScore, driftHours)
-        )
-    }
-
-    private fun buildHourBuckets(records: List<TimeRecord>): IntArray {
-        val buckets = IntArray(24)
-        records.forEach { rec ->
-            buckets[rec.startTime.hour] += rec.durationMinutes
-        }
-        return buckets
-    }
-
-    private fun peakTwoHourWindow(hourBuckets: IntArray): Pair<Int, Int> {
-        var bestStart = 0
-        var bestMinutes = -1
-        for (hour in 0 until 23) {
-            val windowMinutes = hourBuckets[hour] + hourBuckets[hour + 1]
-            if (windowMinutes > bestMinutes) {
-                bestStart = hour
-                bestMinutes = windowMinutes
-            }
-        }
-        return Pair(bestStart, bestMinutes.coerceAtLeast(0))
-    }
-
-    private fun computeConsistencyScore(records: List<TimeRecord>): Int? {
-        val byDate = records.groupBy { it.startTime.toLocalDate() }
-        val primaryHours = byDate.values.mapNotNull { dayRecords ->
-            val dayBuckets = buildHourBuckets(dayRecords)
-            val maxMinutes = dayBuckets.maxOrNull() ?: 0
-            if (maxMinutes <= 0) null else dayBuckets.indexOfFirst { it == maxMinutes }.toFloat()
-        }
-        if (primaryHours.size < 2) return null
-
-        val mean = primaryHours.average().toFloat()
-        val variance = primaryHours.map { hour -> (hour - mean) * (hour - mean) }.average().toFloat()
-        val stdDev = sqrt(variance)
-        val normalized = (1f - (stdDev / 6f)).coerceIn(0f, 1f)
-        return (normalized * 100f).roundToInt()
-    }
-
-    private fun weightedMedianHour(hourBuckets: IntArray): Float? {
-        val total = hourBuckets.sum()
-        if (total <= 0) return null
-        val half = total / 2f
-        var running = 0f
-        for (hour in 0..23) {
-            running += hourBuckets[hour]
-            if (running >= half) return hour.toFloat()
-        }
-        return 23f
-    }
-
-    private fun buildActionItems(
-        peakStartHour: Int,
-        consistencyScore: Int?,
-        driftHours: Float?
-    ): List<String> {
-        val items = mutableListOf<String>()
-        items += "Block ${formatHourRange(peakStartHour)} for deep tasks."
-
-        if (consistencyScore != null && consistencyScore < 60) {
-            items += "Keep start times within 1 hour for the next 5 work days."
-        }
-
-        if (driftHours != null && driftHours >= 1f) {
-            items += "Your focus time is drifting later. Move key work earlier by 30 minutes tomorrow."
-        } else if (driftHours != null && driftHours <= -1f) {
-            items += "Your focus time shifted earlier. Protect this schedule with no-meeting blocks."
-        }
-
-        if (items.size < 2) {
-            items += "Review this panel weekly and keep only one improvement target at a time."
-        }
-        return items.take(2)
-    }
-
-    private fun formatHourRange(startHour: Int): String {
-        val endHour = (startHour + 2).coerceAtMost(24)
-        return "%02d:00-%02d:00".format(startHour, endHour)
-    }
 }

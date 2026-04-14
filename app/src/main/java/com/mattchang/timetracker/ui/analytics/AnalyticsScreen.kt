@@ -17,15 +17,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Coffee
 import androidx.compose.material.icons.filled.ElectricBolt
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.TipsAndUpdates
-import androidx.compose.material.icons.filled.TrackChanges
 import androidx.compose.material3.Card
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -158,83 +154,43 @@ fun AnalyticsScreen(
                 }
             }
 
-            // ── Decision panel ───────────────────────────────────────────
-            uiState.decisionInsights?.let { insights ->
+            // ── Decision panel ────────────────────────────────────────────
+            if (uiState.elapsedMinutes > 0) {
                 item {
+                    val rate = uiState.totalTrackedMinutes.toFloat() / uiState.elapsedMinutes
+                    val pct = (rate * 100).toInt()
                     SectionCard(title = stringResource(R.string.decision_panel)) {
-                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                MiniStatCard(
-                                    icon = Icons.Default.Schedule,
-                                    label = stringResource(R.string.peak_focus_window),
-                                    value = formatHourRange(insights.peakStartHour),
-                                    iconTint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.weight(1f)
+                                Text(
+                                    text = stringResource(R.string.recording_rate),
+                                    style = MaterialTheme.typography.bodyMedium
                                 )
-                                MiniStatCard(
-                                    icon = Icons.Default.TrackChanges,
-                                    label = stringResource(R.string.consistency_score),
-                                    value = insights.consistencyScore?.let { "$it" } ?: "–",
-                                    iconTint = MaterialTheme.colorScheme.tertiary,
-                                    modifier = Modifier.weight(1f)
+                                Text(
+                                    text = "$pct%",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
                                 )
                             }
-
-                            Row(
+                            LinearProgressIndicator(
+                                progress = { rate.coerceIn(0f, 1f) },
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                MiniStatCard(
-                                    icon = Icons.Default.BarChart,
-                                    label = stringResource(R.string.peak_confidence),
-                                    value = "${(insights.peakConfidence * 100).toInt()}%",
-                                    iconTint = MaterialTheme.colorScheme.secondary,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                MiniStatCard(
-                                    icon = Icons.AutoMirrored.Filled.TrendingUp,
-                                    label = stringResource(R.string.drift_alert),
-                                    value = formatDrift(insights.driftHours),
-                                    iconTint = if ((insights.driftHours ?: 0f) >= 1f)
-                                        MaterialTheme.colorScheme.error
-                                    else MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-
-                            Card {
-                                Column(
-                                    modifier = Modifier.padding(12.dp),
-                                    verticalArrangement = Arrangement.spacedBy(6.dp)
-                                ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                    ) {
-                                        Icon(
-                                            Icons.Default.TipsAndUpdates,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(16.dp),
-                                            tint = MaterialTheme.colorScheme.primary
-                                        )
-                                        Text(
-                                            text = stringResource(R.string.next_actions),
-                                            style = MaterialTheme.typography.labelLarge,
-                                            fontWeight = FontWeight.SemiBold
-                                        )
-                                    }
-                                    insights.actionItems.forEach { item ->
-                                        Text(
-                                            text = "• $item",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                }
-                            }
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = stringResource(
+                                    R.string.recording_rate_detail,
+                                    formatMinutes(uiState.totalTrackedMinutes),
+                                    formatMinutes(uiState.elapsedMinutes)
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                 }
@@ -248,11 +204,12 @@ fun AnalyticsScreen(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
+                            val unknownLabel = stringResource(R.string.unknown_time)
                             val slices = uiState.categorySummary.map { cat ->
                                 PieSlice(
                                     color = parseColor(cat.colorHex),
                                     fraction = cat.fraction,
-                                    label = cat.name
+                                    label = if (cat.isUnknown) unknownLabel else cat.name
                                 )
                             }
                             DonutChart(
@@ -267,10 +224,10 @@ fun AnalyticsScreen(
                                 modifier = Modifier.weight(1f),
                                 verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
-                                uiState.categorySummary.take(6).forEach { item ->
+                                uiState.categorySummary.forEach { item ->
                                     LegendRow(
                                         color = parseColor(item.colorHex),
-                                        label = item.name,
+                                        label = if (item.isUnknown) unknownLabel else item.name,
                                         minutes = item.totalMinutes,
                                         fraction = item.fraction
                                     )
@@ -373,16 +330,6 @@ private fun formatMinutes(minutes: Int): String {
     return if (h > 0) "${h}h ${m}m" else "${m}m"
 }
 
-private fun formatHourRange(startHour: Int): String {
-    val endHour = (startHour + 2).coerceAtMost(24)
-    return "%02d:00-%02d:00".format(startHour, endHour)
-}
-
-private fun formatDrift(driftHours: Float?): String {
-    if (driftHours == null) return "–"
-    val sign = if (driftHours >= 0f) "+" else ""
-    return "$sign${"%.1f".format(driftHours)}h"
-}
 
 private fun parseColor(hex: String): Color = try {
     Color(android.graphics.Color.parseColor(hex))

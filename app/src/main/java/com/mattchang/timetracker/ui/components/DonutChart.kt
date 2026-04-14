@@ -64,7 +64,7 @@ fun DonutChart(
                 useCenter = false,
                 topLeft = topLeft,
                 size = arcSize,
-                style = Stroke(width = strokePx, cap = StrokeCap.Round)
+                style = Stroke(width = strokePx, cap = StrokeCap.Butt)
             )
             return@Canvas
         }
@@ -80,7 +80,7 @@ fun DonutChart(
                     useCenter = false,
                     topLeft = topLeft,
                     size = arcSize,
-                    style = Stroke(width = strokePx, cap = StrokeCap.Round)
+                    style = Stroke(width = strokePx, cap = StrokeCap.Butt)
                 )
             }
             startAngle += slice.fraction * 360f
