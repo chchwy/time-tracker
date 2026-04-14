@@ -26,8 +26,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.rememberSwipeToDismissBoxState
@@ -85,16 +83,6 @@ fun RecordListScreen(
     }
 
     Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text(stringResource(R.string.app_name)) },
-                actions = {
-                    IconButton(onClick = onNavigateToSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
-                    }
-                }
-            )
-        },
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState)
         }
@@ -104,7 +92,8 @@ fun RecordListScreen(
                 weekStart = weekStart,
                 weekEnd = weekEnd,
                 onPreviousWeek = { weekOffset-- },
-                onNextWeek = { weekOffset++ }
+                onNextWeek = { weekOffset++ },
+                onNavigateToSettings = onNavigateToSettings
             )
 
             if (weekRecords.isEmpty()) {
@@ -145,7 +134,8 @@ private fun WeekNavigationHeader(
     weekStart: LocalDate,
     weekEnd: LocalDate,
     onPreviousWeek: () -> Unit,
-    onNextWeek: () -> Unit
+    onNextWeek: () -> Unit,
+    onNavigateToSettings: () -> Unit
 ) {
     val fmt = DateTimeFormatter.ofPattern("MM/dd")
     val label = "${weekStart.format(fmt)} - ${weekEnd.format(fmt)}"
@@ -167,11 +157,16 @@ private fun WeekNavigationHeader(
             text = label,
             style = MaterialTheme.typography.titleMedium
         )
-        IconButton(onClick = onNextWeek) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = "Next week"
-            )
+        Row {
+            IconButton(onClick = onNextWeek) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = "Next week"
+                )
+            }
+            IconButton(onClick = onNavigateToSettings) {
+                Icon(Icons.Default.Settings, contentDescription = "Settings")
+            }
         }
     }
 }
