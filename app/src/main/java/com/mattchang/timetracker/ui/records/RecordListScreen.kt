@@ -18,6 +18,9 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -32,16 +35,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mattchang.timetracker.R
 import com.mattchang.timetracker.domain.model.TimeRecord
+import com.mattchang.timetracker.ui.analytics.PeriodType
 import com.mattchang.timetracker.ui.components.TimeRecordCard
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -69,29 +75,89 @@ fun RecordListScreen(
             .toSortedMap(compareByDescending { it })
     }
 
-    var weekOffset by remember { mutableIntStateOf(0) }
+    var periodType by remember { mutableStateOf(PeriodType.WEEK) }
+    var periodOffset by remember { mutableIntStateOf(0) }
 
-    val today = remember { LocalDate.now() }
-    val weekStart = remember(weekOffset) {
-        today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).plusWeeks(weekOffset.toLong())
+    val today = LocalDate.now()
+    val periodStart = remember(periodType, periodOffset) {
+        when (periodType) {
+            PeriodType.DAY -> today.plusDays(periodOffset.toLong())
+            PeriodType.WEEK -> today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).plusWeeks(periodOffset.toLong())
+            PeriodType.MONTH -> today.withDayOfMonth(1).plusMonths(periodOffset.toLong())
+        }
     }
-    val weekEnd = remember(weekStart) { weekStart.plusDays(6) }
+    val periodEnd = remember(periodType, periodStart) {
+        when (periodType) {
+            PeriodType.DAY -> periodStart
+            PeriodType.WEEK -> periodStart.plusDays(6)
+            PeriodType.MONTH -> periodStart.plusMonths(1).minusDays(1)
+        }
+    }
 
-    val weekRecords = remember(groupedRecords, weekStart, weekEnd) {
-        groupedRecords.filter { (date, _) -> !date.isBefore(weekStart) && !date.isAfter(weekEnd) }
+    val periodRecords = remember(groupedRecords, periodStart, periodEnd) {
+        groupedRecords.filter { (date, _) -> !date.isBefore(periodStart) && !date.isAfter(periodEnd) }
+    }
+
+    val periodLabel = remember(periodType, periodStart, periodEnd) {
+        val fmt = DateTimeFormatter.ofPattern("MM/dd")
+        when (periodType) {
+            PeriodType.DAY -> periodStart.format(DateTimeFormatter.ofPattern("yyyy/MM/dd (E)"))
+            PeriodType.WEEK -> "${periodStart.format(fmt)} – ${periodEnd.format(fmt)}"
+            PeriodType.MONTH -> periodStart.format(DateTimeFormatter.ofPattern("yyyy/MM"))
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
-            WeekNavigationHeader(
-                weekStart = weekStart,
-                weekEnd = weekEnd,
-                onPreviousWeek = { weekOffset-- },
-                onNextWeek = { weekOffset++ },
-                onNavigateToSettings = onNavigateToSettings
+            // ── Period type selector ──────────────────────────────────────
+            val options = listOf(
+                PeriodType.DAY to stringResource(R.string.day),
+                PeriodType.WEEK to stringResource(R.string.week),
+                PeriodType.MONTH to stringResource(R.string.month)
             )
+            SingleChoiceSegmentedButtonRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                options.forEachIndexed { index, (type, label) ->
+                    SegmentedButton(
+                        selected = periodType == type,
+                        onClick = { periodType = type; periodOffset = 0 },
+                        shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
+                        label = { Text(label) }
+                    )
+                }
+            }
 
-            if (weekRecords.isEmpty()) {
+            // ── Date navigation ───────────────────────────────────────────
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = { periodOffset-- }) {
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = null)
+                }
+                Text(
+                    text = periodLabel,
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(1f)
+                )
+                Row {
+                    IconButton(onClick = { periodOffset++ }) {
+                        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
+                    }
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(Icons.Default.Settings, contentDescription = null)
+                    }
+                }
+            }
+
+            if (periodRecords.isEmpty()) {
                 EmptyState()
             } else {
                 val dateFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd (E)")
@@ -102,7 +168,7 @@ fun RecordListScreen(
                         .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    weekRecords.forEach { (date, dayRecords) ->
+                    periodRecords.forEach { (date, dayRecords) ->
                         item(key = "header_$date") {
                             DateHeader(date = date, formatter = dateFormatter)
                         }
@@ -128,47 +194,6 @@ fun RecordListScreen(
     }
 }
 
-@Composable
-private fun WeekNavigationHeader(
-    weekStart: LocalDate,
-    weekEnd: LocalDate,
-    onPreviousWeek: () -> Unit,
-    onNextWeek: () -> Unit,
-    onNavigateToSettings: () -> Unit
-) {
-    val fmt = DateTimeFormatter.ofPattern("MM/dd")
-    val label = "${weekStart.format(fmt)} - ${weekEnd.format(fmt)}"
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 4.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(onClick = onPreviousWeek) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                contentDescription = "Previous week"
-            )
-        }
-        Text(
-            text = label,
-            style = MaterialTheme.typography.titleMedium
-        )
-        Row {
-            IconButton(onClick = onNextWeek) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = "Next week"
-                )
-            }
-            IconButton(onClick = onNavigateToSettings) {
-                Icon(Icons.Default.Settings, contentDescription = "Settings")
-            }
-        }
-    }
-}
 
 @Composable
 private fun DateHeader(date: LocalDate, formatter: DateTimeFormatter) {
