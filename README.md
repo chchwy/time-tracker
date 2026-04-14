@@ -1,52 +1,79 @@
-# Time Tracker (時間追蹤器)
+# Time Tracker（時間追蹤器）
 
-A modern, highly customizable Android Time Tracking application built purely with **Jetpack Compose** and **Kotlin**. Designed to move past traditional "accounting-style" time tracking, this app focuses on **energy management, sleep quality context, and true productivity analytics.**
+A modern Android time tracking app built with **Jetpack Compose** and **Kotlin**. Designed to go beyond simple stopwatch logging — track categories, projects (via tags), sleep quality, and get honest analytics that account for unrecorded time.
 
-## 🌟 Key Features
+## Features
 
-### 1. ⏱️ Time Tracking
-* **Manual & Timer Modes:** Seamlessly start a live timer or log past activities.
-* **Rich Metadata:** Add Categories, Titles, free-text Notes, and Tags to any activity.
-* **Custom Categories:** Fully management system to create and edit your own categories with personalized Material Design color codes.
+### Time Tracking
 
-### 2. 🛏️ Context-Aware Sleep Tracking
-Traditional time trackers just log "8 hours of sleep." This app treats sleep as the foundation of your productivity by tracking:
-* **Pre-sleep Habits:** Toggles for "Read Book," "Used Computer," or "Chatted with Partner". 
-* **Interruptions:** Log if you were woken up by a child or state your "Reason for staying up late."
-* **Morning Energy:** Rate your energy index (1-10) the next morning to map habits to outcomes.
+- **Manual & Timer modes** — log past activities or start a live timer
+- **Rich metadata** — Category, Title, Notes, and Tags on every record
+- **Custom Categories** — create and edit categories with Material Design color codes
+- **Tags as projects** — use tags to track sub-categories or project-level time (e.g. a "Work" category with a "Fruitesse" tag)
 
-### 3. 📊 Advanced Analytics & Stacked Bar Charts
-* **Hourly & Daily Distribution:** Visualize your time via a dynamic **Stacked Bar Chart**. Avoid the trap of "24-hour total logging"—instead, see exactly which *colors (categories)* dominated your morning, afternoon, or week.
-* **Dynamic Insights:** Check your weekly average sleep duration, reading streak, and correlation between pre-bed habits and morning energy.
+### Sleep Tracking
 
-### 4. 🗄️ Full Data Ownership 
-* **Local First:** All your data lives locally on your device via the Android Room Database.
-* **CSV Export:** One-tap export of your entire database layout to a `.csv` file. Built-in UTF-8 BOM encoding ensures flawless opening in Microsoft Excel without Chinese character garbling.
+Sleep is treated as a first-class record type, not just another activity:
 
-## 🛠️ Tech Stack & Architecture
-* **UI Toolkit:** Jetpack Compose (Material 3)
-* **Language:** Kotlin
-* **Architecture:** MVVM (Model-View-ViewModel) + Clean Architecture approach
-* **Database:** Room (SQLite) for robust local persistence 
-* **Dependency Injection:** Dagger Hilt
-* **Coroutines & Flow:** Completely reactive UI streams from DB to View
+- **Pre-sleep habits** — toggles for Read Book, Used Computer, Chatted with Partner
+- **Interruptions** — log child interruptions or reasons for staying up late
+- **Morning energy index** — rate your energy (1–10) the next morning
+- **Reading log** — automatically tracks which books you read before bed
 
-## 📦 Getting Started
+### Analytics
+
+The analytics page gives an honest picture of how your time is spent:
+
+- **Category distribution** — animated donut chart showing each category's share of elapsed time (not just tracked time)
+- **Unknown time block** — unrecorded time is explicitly shown as "Unknown" so categories never falsely add up to 100%
+- **Overnight sleep handling** — sleep that starts before midnight is correctly split across both days
+- **Future time excluded** — today's denominator is only the hours that have already passed, not the full 24h
+- **Tag cumulative duration** — total time per tag across the period, useful for project-level tracking
+- **Recording rate** — shows what percentage of elapsed time you actually logged, with a progress bar
+- **Sleep analysis** — average duration, morning energy, and bedtime habit rates
+- **Day / Week / Month views** with navigation on both the Records and Analytics pages
+
+### Data
+
+- **Local first** — all data lives on-device via Room (SQLite)
+- **CSV export & import** — one-tap export with UTF-8 BOM for Excel compatibility
+- **Multilingual** — English and Traditional Chinese (zh-rTW)
+
+## Tech Stack
+
+| Layer | Library |
+|---|---|
+| UI | Jetpack Compose (Material 3) |
+| Language | Kotlin |
+| Architecture | MVVM + Clean Architecture |
+| Database | Room (SQLite) |
+| DI | Dagger Hilt |
+| Async | Coroutines + Flow |
+
+## Getting Started
 
 ### Prerequisites
-* Android Studio (Koala or newer)
-* Minimum SDK 24 / Target SDK 34
+
+- Android Studio (Koala or newer)
+- Min SDK 24 / Target SDK 34
 
 ### Installation
-1. Clone the repository: `git clone https://github.com/mchang/matt-timer-trcker.git`
-2. Open the project in **Android Studio**.
-3. Let Gradle sync and then click **Run (▶)** to deploy the app to your emulator or physical Android device.
 
-## 📝 Roadmap
-* [x] Basic CRUD for Time Records
-* [x] Sleep Tracking & Metadata
-* [x] Analytics Engine & Visualizations (Stacked Bar Charts)
-* [x] Category & UI Settings
-* [x] CSV Data Export
-* [ ] Home Screen Widgets for 1-tap logging
-* [ ] Android UsageStats Integration for passive screen-time tracking
+1. Clone the repo: `git clone https://github.com/mchang/matt-timer-trcker.git`
+2. Open in Android Studio
+3. Let Gradle sync, then click **Run ▶** to deploy to emulator or device
+
+## Roadmap
+
+- [x] Manual & timer-based time records
+- [x] Custom categories with color codes
+- [x] Tags for project/sub-category tracking
+- [x] Sleep tracking with habit metadata and morning energy
+- [x] Donut chart analytics with honest unknown-time accounting
+- [x] Tag cumulative duration analytics
+- [x] Recording rate indicator
+- [x] Day / Week / Month views on Records and Analytics
+- [x] CSV export & import
+- [x] Traditional Chinese localization
+- [ ] Home screen widget for one-tap logging
+- [ ] Android UsageStats integration for passive screen-time tracking
