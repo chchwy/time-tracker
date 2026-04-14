@@ -6,11 +6,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material3.AssistChip
@@ -51,16 +54,23 @@ fun TimeRecordCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                .height(IntrinsicSize.Min),
             verticalAlignment = Alignment.Top
         ) {
             Box(
                 modifier = Modifier
-                    .size(12.dp)
-                    .padding(top = 4.dp)
-                    .background(categoryColor, CircleShape)
+                    .width(5.dp)
+                    .fillMaxHeight()
+                    .background(categoryColor)
             )
+
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.Top
+            ) {
 
             Column(
                 modifier = Modifier.weight(1f),
@@ -110,10 +120,11 @@ fun TimeRecordCard(
                 }
             }
 
-            DurationText(
-                minutes = record.durationMinutes,
-                style = MaterialTheme.typography.labelLarge
-            )
+                DurationText(
+                    minutes = record.durationMinutes,
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
         }
     }
 }
