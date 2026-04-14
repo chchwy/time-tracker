@@ -1,58 +1,39 @@
 package com.mattchang.timetracker.ui.settings
 
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mattchang.timetracker.domain.model.Category
 import com.mattchang.timetracker.domain.model.Tag
 import com.mattchang.timetracker.domain.repository.CategoryRepository
-import com.mattchang.timetracker.domain.repository.DriveBackupRepository
 import com.mattchang.timetracker.domain.repository.TagRepository
 import com.mattchang.timetracker.domain.repository.TimeRecordRepository
 import com.mattchang.timetracker.util.CsvSerializer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 data class ImportResult(val imported: Int, val skipped: Int)
 
-data class CloudBackupUiState(
-    val isSignedIn: Boolean = false,
-    val accountEmail: String? = null,
-    val lastBackupTime: String? = null,
-    val isBusy: Boolean = false
-)
-
 sealed class SettingsEvent {
     data class ImportDone(val result: ImportResult) : SettingsEvent()
     data object ImportFailed : SettingsEvent()
-    data object BackupDone : SettingsEvent()
-    data object BackupFailed : SettingsEvent()
-    data class RestoreDone(val result: ImportResult) : SettingsEvent()
-    data object RestoreFailed : SettingsEvent()
-    data object NoBackupFound : SettingsEvent()
-    data object SignInFailed : SettingsEvent()
 }
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val categoryRepository: CategoryRepository,
     private val timeRecordRepository: TimeRecordRepository,
-    private val tagRepository: TagRepository,
-    private val driveBackupRepository: DriveBackupRepository
+    private val tagRepository: TagRepository
 ) : ViewModel() {
 
     private val _events = MutableSharedFlow<SettingsEvent>()
@@ -60,23 +41,6 @@ class SettingsViewModel @Inject constructor(
 
     val categories: StateFlow<List<Category>> = categoryRepository.getAllCategories()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
-    private val _cloudState = MutableStateFlow(CloudBackupUiState())
-    val cloudState: StateFlow<CloudBackupUiState> = _cloudState.asStateFlow()
-
-    init {
-        refreshCloudState()
-    }
-
-    private fun refreshCloudState() {
-        _cloudState.update {
-            it.copy(
-                isSignedIn = driveBackupRepository.isSignedIn(),
-                accountEmail = driveBackupRepository.getSignedInEmail(),
-                lastBackupTime = driveBackupRepository.getLastBackupTimestamp()
-            )
-        }
-    }
 
     // ── Category management ───────────────────────────────────────────────
 
@@ -144,72 +108,6 @@ class SettingsViewModel @Inject constructor(
             } catch (e: Exception) {
                 e.printStackTrace()
                 _events.emit(SettingsEvent.ImportFailed)
-            }
-        }
-    }
-
-    // ── Google Drive backup ───────────────────────────────────────────────
-
-    fun getSignInIntent(): Intent = driveBackupRepository.getSignInIntent()
-
-    fun handleSignInResult(data: Intent?) {
-        viewModelScope.launch {
-            val success = driveBackupRepository.handleSignInResult(data)
-            refreshCloudState()
-            if (!success) _events.emit(SettingsEvent.SignInFailed)
-        }
-    }
-
-    fun signOutGoogle() {
-        viewModelScope.launch {
-            driveBackupRepository.signOut()
-            refreshCloudState()
-        }
-    }
-
-    fun backupToCloud() {
-        viewModelScope.launch {
-            _cloudState.update { it.copy(isBusy = true) }
-            try {
-                val csv = generateCsvContent()
-                val result = driveBackupRepository.uploadBackup(csv)
-                if (result.isSuccess) {
-                    refreshCloudState()
-                    _events.emit(SettingsEvent.BackupDone)
-                } else {
-                    _events.emit(SettingsEvent.BackupFailed)
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _events.emit(SettingsEvent.BackupFailed)
-            } finally {
-                _cloudState.update { it.copy(isBusy = false) }
-            }
-        }
-    }
-
-    fun restoreFromCloud() {
-        viewModelScope.launch {
-            _cloudState.update { it.copy(isBusy = true) }
-            try {
-                val downloadResult = driveBackupRepository.downloadBackup()
-                if (downloadResult.isFailure) {
-                    val msg = downloadResult.exceptionOrNull()?.message ?: ""
-                    if (msg.contains("No backup")) {
-                        _events.emit(SettingsEvent.NoBackupFound)
-                    } else {
-                        _events.emit(SettingsEvent.RestoreFailed)
-                    }
-                    return@launch
-                }
-                val csv = downloadResult.getOrThrow()
-                val result = insertCsvRows(csv)
-                _events.emit(SettingsEvent.RestoreDone(result))
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _events.emit(SettingsEvent.RestoreFailed)
-            } finally {
-                _cloudState.update { it.copy(isBusy = false) }
             }
         }
     }

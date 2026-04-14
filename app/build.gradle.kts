@@ -86,16 +86,6 @@ dependencies {
 
     implementation(libs.kotlinx.coroutines.android)
 
-    // Google Drive backup
-    implementation(libs.play.services.auth)
-    implementation(libs.google.api.services.drive) {
-        exclude(group = "org.apache.httpcomponents")
-    }
-    implementation(libs.google.api.client.android) {
-        exclude(group = "org.apache.httpcomponents")
-    }
-    implementation(libs.google.http.client.gson)
-
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)

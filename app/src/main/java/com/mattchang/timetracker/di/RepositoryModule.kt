@@ -1,11 +1,9 @@
 package com.mattchang.timetracker.di
 
 import com.mattchang.timetracker.data.repository.CategoryRepositoryImpl
-import com.mattchang.timetracker.data.repository.DriveBackupRepositoryImpl
 import com.mattchang.timetracker.data.repository.TagRepositoryImpl
 import com.mattchang.timetracker.data.repository.TimeRecordRepositoryImpl
 import com.mattchang.timetracker.domain.repository.CategoryRepository
-import com.mattchang.timetracker.domain.repository.DriveBackupRepository
 import com.mattchang.timetracker.domain.repository.TagRepository
 import com.mattchang.timetracker.domain.repository.TimeRecordRepository
 import dagger.Binds
@@ -35,10 +33,4 @@ abstract class RepositoryModule {
     abstract fun bindTagRepository(
         impl: TagRepositoryImpl
     ): TagRepository
-
-    @Binds
-    @Singleton
-    abstract fun bindDriveBackupRepository(
-        impl: DriveBackupRepositoryImpl
-    ): DriveBackupRepository
 }

@@ -14,10 +14,6 @@ coroutines = "1.9.0"
 junit = "4.13.2"
 mockk = "1.13.12"
 turbine = "1.2.0"
-play-services-auth = "21.2.0"
-google-api-services-drive = "v3-rev20240521-2.0.0"
-google-api-client-android = "2.2.0"
-google-http-client-gson = "1.44.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
@@ -50,10 +46,6 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 
-play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "play-services-auth" }
-google-api-services-drive = { group = "com.google.apis", name = "google-api-services-drive", version.ref = "google-api-services-drive" }
-google-api-client-android = { group = "com.google.api-client", name = "google-api-client-android", version.ref = "google-api-client-android" }
-google-http-client-gson = { group = "com.google.http-client", name = "google-http-client-gson", version.ref = "google-http-client-gson" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
