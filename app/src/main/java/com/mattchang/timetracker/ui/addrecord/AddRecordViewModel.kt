@@ -161,11 +161,8 @@ class AddRecordViewModel @Inject constructor(
                 val snapped = if (latestEnd.isAfter(now)) now else latestEnd
                 _uiState.update { it.copy(startTime = snapped, endTime = snapped, errorMessage = null) }
             } else {
-                _uiState.update { state ->
-                    val newStart = LocalDateTime.of(date, state.startTime.toLocalTime())
-                    val duration = Duration.between(state.startTime, state.endTime)
-                    state.copy(startTime = newStart, endTime = newStart.plus(duration), errorMessage = null)
-                }
+                val sevenAm = LocalDateTime.of(date, java.time.LocalTime.of(7, 0))
+                _uiState.update { it.copy(startTime = sevenAm, endTime = sevenAm, errorMessage = null) }
             }
         }
     }
