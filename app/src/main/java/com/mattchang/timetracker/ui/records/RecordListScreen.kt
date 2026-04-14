@@ -61,7 +61,7 @@ fun RecordListScreen(
     val categoryMap = remember(categories) { categories.associateBy { it.id } }
 
     val groupedRecords = remember(records) {
-        records.groupBy { it.startTime.toLocalDate() }
+        records.groupBy { it.endTime.toLocalDate() }
             .toSortedMap(compareByDescending { it })
     }
 
