@@ -133,24 +133,45 @@ fun AnalyticsScreen(
                 }
             }
         } else {
-            // ── Summary cards ─────────────────────────────────────────────
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    SummaryCard(
-                        label = stringResource(R.string.total_tracked),
-                        value = formatMinutes(uiState.totalTrackedMinutes),
-                        icon = Icons.Default.BarChart,
-                        modifier = Modifier.weight(1f)
-                    )
-                    SummaryCard(
-                        label = stringResource(R.string.daily_avg),
-                        value = formatMinutes(uiState.dailyAvgMinutes.toInt()),
-                        icon = Icons.Default.Coffee,
-                        modifier = Modifier.weight(1f)
-                    )
+            // ── Donut chart + legend ──────────────────────────────────────
+            if (uiState.categorySummary.isNotEmpty()) {
+                item {
+                    SectionCard(title = stringResource(R.string.category_distribution)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            val unknownLabel = stringResource(R.string.unknown_time)
+                            val slices = uiState.categorySummary.map { cat ->
+                                PieSlice(
+                                    color = parseColor(cat.colorHex),
+                                    fraction = cat.fraction,
+                                    label = if (cat.isUnknown) unknownLabel else cat.name
+                                )
+                            }
+                            DonutChart(
+                                slices = slices,
+                                modifier = Modifier.size(140.dp),
+                                strokeWidth = 28.dp
+                            )
+
+                            Spacer(Modifier.width(16.dp))
+
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                uiState.categorySummary.forEach { item ->
+                                    LegendRow(
+                                        color = parseColor(item.colorHex),
+                                        label = if (item.isUnknown) unknownLabel else item.name,
+                                        minutes = item.totalMinutes,
+                                        fraction = item.fraction
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -196,45 +217,24 @@ fun AnalyticsScreen(
                 }
             }
 
-            // ── Donut chart + legend ──────────────────────────────────────
-            if (uiState.categorySummary.isNotEmpty()) {
-                item {
-                    SectionCard(title = stringResource(R.string.category_distribution)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            val unknownLabel = stringResource(R.string.unknown_time)
-                            val slices = uiState.categorySummary.map { cat ->
-                                PieSlice(
-                                    color = parseColor(cat.colorHex),
-                                    fraction = cat.fraction,
-                                    label = if (cat.isUnknown) unknownLabel else cat.name
-                                )
-                            }
-                            DonutChart(
-                                slices = slices,
-                                modifier = Modifier.size(140.dp),
-                                strokeWidth = 28.dp
-                            )
-
-                            Spacer(Modifier.width(16.dp))
-
-                            Column(
-                                modifier = Modifier.weight(1f),
-                                verticalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                uiState.categorySummary.forEach { item ->
-                                    LegendRow(
-                                        color = parseColor(item.colorHex),
-                                        label = if (item.isUnknown) unknownLabel else item.name,
-                                        minutes = item.totalMinutes,
-                                        fraction = item.fraction
-                                    )
-                                }
-                            }
-                        }
-                    }
+            // ── Summary cards ─────────────────────────────────────────────
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    SummaryCard(
+                        label = stringResource(R.string.total_tracked),
+                        value = formatMinutes(uiState.totalTrackedMinutes),
+                        icon = Icons.Default.BarChart,
+                        modifier = Modifier.weight(1f)
+                    )
+                    SummaryCard(
+                        label = stringResource(R.string.daily_avg),
+                        value = formatMinutes(uiState.dailyAvgMinutes.toInt()),
+                        icon = Icons.Default.Coffee,
+                        modifier = Modifier.weight(1f)
+                    )
                 }
             }
 
