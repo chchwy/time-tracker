@@ -88,6 +88,11 @@ fun RecordListScreen(
         }
     ) { paddingValues ->
         Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+            Text(
+                text = stringResource(R.string.tab_records),
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 4.dp)
+            )
             WeekNavigationHeader(
                 weekStart = weekStart,
                 weekEnd = weekEnd,
