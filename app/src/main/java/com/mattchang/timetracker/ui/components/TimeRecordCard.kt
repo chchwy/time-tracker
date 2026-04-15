@@ -59,7 +59,7 @@ fun TimeRecordCard(
         ) {
             Box(
                 modifier = Modifier
-                    .width(10.dp)
+                    .width(16.dp)
                     .fillMaxHeight()
                     .background(categoryColor)
             )
