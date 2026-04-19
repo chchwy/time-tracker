@@ -33,6 +33,7 @@
     <string name="cancel">Cancel</string>
     <string name="today">Today</string>
     <string name="yesterday">Yesterday</string>
+    <string name="now">Now</string>
     <string name="delete">Delete</string>
     <string name="edit">Edit</string>
 

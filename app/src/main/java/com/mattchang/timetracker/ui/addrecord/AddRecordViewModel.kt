@@ -167,6 +167,14 @@ class AddRecordViewModel @Inject constructor(
         }
     }
 
+    fun setEndTimeToNow() {
+        _uiState.update { state ->
+            val now = LocalDateTime.now().withSecond(0).withNano(0)
+            val newStart = if (now.isBefore(state.startTime)) now else state.startTime
+            state.copy(endTime = now, startTime = newStart, errorMessage = null)
+        }
+    }
+
     fun addDuration(minutes: Long) {
         _uiState.update { state ->
             val newEndTime = state.endTime.plusMinutes(minutes)

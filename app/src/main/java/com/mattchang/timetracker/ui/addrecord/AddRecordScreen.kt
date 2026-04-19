@@ -154,6 +154,12 @@ fun AddRecordScreen(
                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
             ) {
                 androidx.compose.material3.OutlinedButton(
+                    onClick = viewModel::setEndTimeToNow,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(stringResource(R.string.now))
+                }
+                androidx.compose.material3.OutlinedButton(
                     onClick = { viewModel.addDuration(10) },
                     modifier = Modifier.weight(1f)
                 ) {

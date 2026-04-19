@@ -30,6 +30,7 @@
     <string name="cancel">取消</string>
     <string name="today">今天</string>
     <string name="yesterday">昨天</string>
+    <string name="now">現在</string>
     <string name="delete">刪除</string>
     <string name="edit">編輯</string>
 
