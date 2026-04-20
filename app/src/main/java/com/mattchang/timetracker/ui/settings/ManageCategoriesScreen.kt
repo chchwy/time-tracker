@@ -144,11 +144,19 @@ fun CategoryEditDialog(
     var colorHex by remember { mutableStateOf(category?.colorHex ?: "#4CAF50") }
 
     val presetColors = listOf(
+        // 原有顏色
         "#F44336", "#E91E63", "#9C27B0", "#673AB7",
         "#3F51B5", "#2196F3", "#03A9F4", "#00BCD4",
         "#009688", "#4CAF50", "#8BC34A", "#CDDC39",
         "#FFEB3B", "#FFC107", "#FF9800", "#FF5722",
-        "#795548", "#9E9E9E", "#607D8B"
+        "#795548", "#9E9E9E", "#607D8B",
+        // 馬卡龍粉彩
+        "#FFB3BA", "#FFCCD5", "#FFB5A7", "#FFC3A0",
+        "#FFDAC1", "#FFE5B4", "#FFEAA7", "#E8F5A3",
+        "#C7EFCF", "#B5EAD7", "#ACE1AF", "#BDFCC9",
+        "#AED9F7", "#B5D8F7", "#BDDDE4", "#BFEFFF",
+        "#C9B1D9", "#D5B8E5", "#E0BFE6", "#F2D7EE",
+        "#F5E6D3", "#E8D5C4", "#DDD5E0", "#CFD8DC"
     )
 
     AlertDialog(
