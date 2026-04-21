@@ -150,13 +150,15 @@ fun CategoryEditDialog(
         "#009688", "#4CAF50", "#8BC34A", "#CDDC39",
         "#FFEB3B", "#FFC107", "#FF9800", "#FF5722",
         "#795548", "#9E9E9E", "#607D8B",
-        // 馬卡龍粉彩
-        "#FFB3BA", "#FFCCD5", "#FFB5A7", "#FFC3A0",
-        "#FFDAC1", "#FFE5B4", "#FFEAA7", "#E8F5A3",
-        "#C7EFCF", "#B5EAD7", "#ACE1AF", "#BDFCC9",
-        "#AED9F7", "#B5D8F7", "#BDDDE4", "#BFEFFF",
-        "#C9B1D9", "#D5B8E5", "#E0BFE6", "#F2D7EE",
-        "#F5E6D3", "#E8D5C4", "#DDD5E0", "#CFD8DC"
+        // 特殊鮮豔/寶石色系 (區別於一般內建顏色)
+        "#FF007F", "#C71585", "#8A2BE2", "#4B0082",
+        "#0000CD", "#4169E1", "#008080", "#00A86B",
+        "#2E8B57", "#556B2F", "#8B4513", "#A0522D",
+        "#D2691E", "#FF4500", "#DC143C", "#8B0000",
+        "#4682B4", "#2F4F4F", "#483D8B", "#800080",
+        "#B22222", "#FF1493", "#1E90FF", "#32CD32",
+        // 精選馬卡龍色
+        "#FFB3BA", "#FFDFBA", "#FFFFBA", "#BAFFC9", "#BAE1FF", "#E8B2FF"
     )
 
     AlertDialog(
