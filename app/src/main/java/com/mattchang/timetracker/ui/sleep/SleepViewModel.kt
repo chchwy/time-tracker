@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import javax.inject.Inject
 
 data class SleepFormState(
@@ -110,12 +111,38 @@ class SleepViewModel @Inject constructor(
 
     // ── Form Updaters ────────────────────────────────────────────────────
 
-    fun updateSleepTime(dt: LocalDateTime) {
-        _form.update { it.copy(sleepTime = dt, errorMessage = null) }
+    fun updateWakeDate(date: LocalDate) {
+        _form.update { state ->
+            val newWake = LocalDateTime.of(date, state.wakeTime.toLocalTime())
+            state.copy(
+                wakeTime = newWake,
+                sleepTime = inferSleepDateTime(state.sleepTime.toLocalTime(), newWake),
+                errorMessage = null
+            )
+        }
     }
 
-    fun updateWakeTime(dt: LocalDateTime) {
-        _form.update { it.copy(wakeTime = dt, errorMessage = null) }
+    fun updateBedtime(time: LocalTime) {
+        _form.update { state ->
+            state.copy(sleepTime = inferSleepDateTime(time, state.wakeTime), errorMessage = null)
+        }
+    }
+
+    fun updateWakeHour(time: LocalTime) {
+        _form.update { state ->
+            val newWake = LocalDateTime.of(state.wakeTime.toLocalDate(), time)
+            state.copy(
+                wakeTime = newWake,
+                sleepTime = inferSleepDateTime(state.sleepTime.toLocalTime(), newWake),
+                errorMessage = null
+            )
+        }
+    }
+
+    private fun inferSleepDateTime(bedtime: LocalTime, wakeDateTime: LocalDateTime): LocalDateTime {
+        val sleepDate = if (bedtime > wakeDateTime.toLocalTime()) wakeDateTime.toLocalDate().minusDays(1)
+                        else wakeDateTime.toLocalDate()
+        return LocalDateTime.of(sleepDate, bedtime)
     }
 
     fun toggleChildInterrupted() {

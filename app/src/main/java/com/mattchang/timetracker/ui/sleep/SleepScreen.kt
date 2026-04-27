@@ -61,9 +61,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mattchang.timetracker.R
 import com.mattchang.timetracker.domain.model.TimeRecord
 import com.mattchang.timetracker.ui.components.AutoCompleteTextField
-import com.mattchang.timetracker.ui.components.DateTimeField
+import com.mattchang.timetracker.ui.components.DateField
 import com.mattchang.timetracker.ui.components.DurationText
+import com.mattchang.timetracker.ui.components.TimeField
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.TextStyle
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -126,8 +129,9 @@ fun SleepScreen(
             when (selectedTab) {
                 0 -> SleepFormTab(
                     form = form,
-                    onSleepTimeChanged = viewModel::updateSleepTime,
-                    onWakeTimeChanged = viewModel::updateWakeTime,
+                    onWakeDateChanged = { viewModel.updateWakeDate(it) },
+                    onBedtimeChanged = { viewModel.updateBedtime(it) },
+                    onWakeHourChanged = { viewModel.updateWakeHour(it) },
                     onToggleChildInterrupted = viewModel::toggleChildInterrupted,
                     onToggleUsedComputer = viewModel::toggleUsedComputer,
                     onToggleReadBook = viewModel::toggleReadBook,
@@ -164,8 +168,9 @@ fun SleepScreen(
 @Composable
 private fun SleepFormTab(
     form: SleepFormState,
-    onSleepTimeChanged: (LocalDateTime) -> Unit,
-    onWakeTimeChanged: (LocalDateTime) -> Unit,
+    onWakeDateChanged: (LocalDate) -> Unit,
+    onBedtimeChanged: (LocalTime) -> Unit,
+    onWakeHourChanged: (LocalTime) -> Unit,
     onToggleChildInterrupted: () -> Unit,
     onToggleUsedComputer: () -> Unit,
     onToggleReadBook: () -> Unit,
@@ -187,20 +192,31 @@ private fun SleepFormTab(
 
         // ── Time pickers ──────────────────────────────────────────────────
         item {
-            DateTimeField(
-                label = stringResource(R.string.sleep_time),
-                dateTime = form.sleepTime,
-                onDateTimeChanged = onSleepTimeChanged,
+            DateField(
+                label = stringResource(R.string.wake_date),
+                dateTime = form.wakeTime,
+                onDateTimeChanged = { dt -> onWakeDateChanged(dt.toLocalDate()) },
                 modifier = Modifier.fillMaxWidth()
             )
         }
         item {
-            DateTimeField(
-                label = stringResource(R.string.wake_time),
-                dateTime = form.wakeTime,
-                onDateTimeChanged = onWakeTimeChanged,
-                modifier = Modifier.fillMaxWidth()
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                TimeField(
+                    label = stringResource(R.string.sleep_time),
+                    dateTime = form.sleepTime,
+                    onDateTimeChanged = { dt -> onBedtimeChanged(dt.toLocalTime()) },
+                    modifier = Modifier.weight(1f)
+                )
+                TimeField(
+                    label = stringResource(R.string.wake_time),
+                    dateTime = form.wakeTime,
+                    onDateTimeChanged = { dt -> onWakeHourChanged(dt.toLocalTime()) },
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
 
         // ── Duration display ──────────────────────────────────────────────

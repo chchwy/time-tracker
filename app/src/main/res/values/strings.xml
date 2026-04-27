@@ -56,6 +56,7 @@
     <!-- Sleep -->
     <string name="sleep_time">Sleep Time</string>
     <string name="wake_time">Wake Time</string>
+    <string name="wake_date">Wake Date</string>
     <string name="child_interrupted">Child interrupted sleep</string>
     <string name="used_computer">Used computer before bed</string>
     <string name="read_book">Read a book before bed</string>
