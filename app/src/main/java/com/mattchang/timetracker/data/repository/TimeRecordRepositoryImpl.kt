@@ -44,6 +44,10 @@ class TimeRecordRepositoryImpl @Inject constructor(
         return timeRecordDao.getRecentTitles()
     }
 
+    override fun getRecentTitlesByCategory(categoryId: Long): Flow<List<String>> {
+        return timeRecordDao.getRecentTitlesByCategory(categoryId)
+    }
+
     override fun getRecentBedtimeBookTitles(): Flow<List<String>> {
         return timeRecordDao.getRecentBedtimeBookTitles()
     }
@@ -55,9 +59,7 @@ class TimeRecordRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getRecordById(id: Long): TimeRecord? {
-        return timeRecordDao.getRecordById(id)?.let { entity ->
-            RecordWithTags(entity, emptyList()).toDomain()
-        }
+        return timeRecordDao.getRecordWithTagsById(id)?.toDomain()
     }
 
     override suspend fun insertRecord(record: TimeRecord, tagIds: List<Long>): Long {

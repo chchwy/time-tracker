@@ -35,6 +35,10 @@ interface TimeRecordDao {
     @Query("SELECT * FROM time_records WHERE id = :id")
     suspend fun getRecordById(id: Long): TimeRecordEntity?
 
+    @Transaction
+    @Query("SELECT * FROM time_records WHERE id = :id")
+    suspend fun getRecordWithTagsById(id: Long): RecordWithTags?
+
     @Query(
         "SELECT category_id AS categoryId, SUM(duration_minutes) AS totalMinutes " +
         "FROM time_records WHERE start_time >= :from AND start_time < :to " +
@@ -47,6 +51,9 @@ interface TimeRecordDao {
 
     @Query("SELECT DISTINCT title FROM time_records WHERE title IS NOT NULL AND title != '' ORDER BY start_time DESC LIMIT 20")
     fun getRecentTitles(): Flow<List<String>>
+
+    @Query("SELECT DISTINCT title FROM time_records WHERE category_id = :categoryId AND title IS NOT NULL AND title != '' ORDER BY start_time DESC LIMIT 20")
+    fun getRecentTitlesByCategory(categoryId: Long): Flow<List<String>>
 
     @Query(
         "SELECT DISTINCT book_title_before_bed FROM time_records " +
