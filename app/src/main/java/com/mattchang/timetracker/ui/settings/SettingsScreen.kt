@@ -35,6 +35,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun SettingsScreen(
     onNavigateToCategories: () -> Unit,
+    onNavigateToTags: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -145,6 +146,21 @@ fun SettingsScreen(
                     ) {
                         Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.padding(end = 16.dp))
                         Text(stringResource(R.string.manage_categories), style = MaterialTheme.typography.bodyLarge)
+                    }
+                }
+            }
+
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth().clickable { onNavigateToTags() },
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.padding(end = 16.dp))
+                        Text(stringResource(R.string.manage_tags), style = MaterialTheme.typography.bodyLarge)
                     }
                 }
             }

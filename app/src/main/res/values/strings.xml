@@ -83,6 +83,12 @@
     <!-- Tags -->
     <string name="add_tag">Add Tag</string>
     <string name="tag_name">Tag name</string>
+    <string name="manage_tags">Manage Tags</string>
+    <string name="edit_tag">Edit Tag</string>
+    <string name="active_tags">Active</string>
+    <string name="archived_tags">Archived</string>
+    <string name="archive">Archive</string>
+    <string name="unarchive">Unarchive</string>
 
     <!-- DateTime -->
     <string name="date">Date</string>

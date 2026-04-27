@@ -80,6 +80,12 @@
     <!-- Tags -->
     <string name="add_tag">新增標籤</string>
     <string name="tag_name">標籤名稱</string>
+    <string name="manage_tags">管理標籤</string>
+    <string name="edit_tag">編輯標籤</string>
+    <string name="active_tags">使用中</string>
+    <string name="archived_tags">已封存</string>
+    <string name="archive">封存</string>
+    <string name="unarchive">解除封存</string>
 
     <!-- DateTime -->
     <string name="time">時間</string>

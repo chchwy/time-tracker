@@ -15,16 +15,25 @@ class TagRepositoryImpl @Inject constructor(
 ) : TagRepository {
 
     override fun getAllTags(): Flow<List<Tag>> {
-        return tagDao.getAllTags().map { list ->
-            list.map { Tag(id = it.id, name = it.name) }
-        }
+        return tagDao.getAllTags().map { list -> list.map { it.toDomain() } }
+    }
+
+    override fun getActiveTags(): Flow<List<Tag>> {
+        return tagDao.getActiveTags().map { list -> list.map { it.toDomain() } }
     }
 
     override suspend fun insertTag(tag: Tag): Long {
-        return tagDao.insertTag(TagEntity(id = tag.id, name = tag.name))
+        return tagDao.insertTag(tag.toEntity())
+    }
+
+    override suspend fun updateTag(tag: Tag) {
+        tagDao.updateTag(tag.toEntity())
     }
 
     override suspend fun deleteTag(id: Long) {
         tagDao.deleteTagById(id)
     }
+
+    private fun TagEntity.toDomain() = Tag(id = id, name = name, isArchived = isArchived)
+    private fun Tag.toEntity() = TagEntity(id = id, name = name, isArchived = isArchived)
 }

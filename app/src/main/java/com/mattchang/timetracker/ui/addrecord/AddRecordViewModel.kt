@@ -68,7 +68,7 @@ class AddRecordViewModel @Inject constructor(
     val categories: StateFlow<List<Category>> = categoryRepository.getAllCategories()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val tags: StateFlow<List<Tag>> = tagRepository.getAllTags()
+    val tags: StateFlow<List<Tag>> = tagRepository.getActiveTags()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     @OptIn(ExperimentalCoroutinesApi::class)
