@@ -34,10 +34,7 @@ import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -75,8 +72,8 @@ fun RecordListScreen(
             .toSortedMap(compareByDescending { it })
     }
 
-    var periodType by remember { mutableStateOf(PeriodType.WEEK) }
-    var periodOffset by remember { mutableIntStateOf(0) }
+    val periodType by viewModel.periodType.collectAsStateWithLifecycle()
+    val periodOffset by viewModel.periodOffset.collectAsStateWithLifecycle()
 
     val today = LocalDate.now()
     val periodStart = remember(periodType, periodOffset) {
@@ -123,7 +120,7 @@ fun RecordListScreen(
                 options.forEachIndexed { index, (type, label) ->
                     SegmentedButton(
                         selected = periodType == type,
-                        onClick = { periodType = type; periodOffset = 0 },
+                        onClick = { viewModel.setPeriodType(type) },
                         shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
                         label = { Text(label) }
                     )
@@ -138,7 +135,7 @@ fun RecordListScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = { periodOffset-- }) {
+                IconButton(onClick = { viewModel.setPeriodOffset(periodOffset - 1) }) {
                     Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = null)
                 }
                 Text(
@@ -148,7 +145,7 @@ fun RecordListScreen(
                     modifier = Modifier.weight(1f)
                 )
                 Row {
-                    IconButton(onClick = { periodOffset++ }) {
+                    IconButton(onClick = { viewModel.setPeriodOffset(periodOffset + 1) }) {
                         Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
                     }
                     IconButton(onClick = onNavigateToSettings) {
