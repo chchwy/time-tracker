@@ -10,6 +10,7 @@ interface TimeRecordRepository {
     fun getRecordsBetween(fromMillis: Long, toMillis: Long): Flow<List<TimeRecord>>
     fun getSleepRecords(): Flow<List<TimeRecord>>
     fun getRecentTitles(): Flow<List<String>>
+    fun getRecentTitlesByCategory(categoryId: Long): Flow<List<String>>
     fun getRecentBedtimeBookTitles(): Flow<List<String>>
     suspend fun getLatestEndTimeOnDate(date: LocalDate): LocalDateTime?
     suspend fun getRecordById(id: Long): TimeRecord?

@@ -17,6 +17,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.first
@@ -67,7 +71,13 @@ class AddRecordViewModel @Inject constructor(
     val tags: StateFlow<List<Tag>> = tagRepository.getAllTags()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val recentTitles: StateFlow<List<String>> = timeRecordRepository.getRecentTitles()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val recentTitles: StateFlow<List<String>> = _uiState
+        .map { it.selectedCategoryId }
+        .flatMapLatest { categoryId ->
+            if (categoryId != null) timeRecordRepository.getRecentTitlesByCategory(categoryId)
+            else flowOf(emptyList())
+        }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
