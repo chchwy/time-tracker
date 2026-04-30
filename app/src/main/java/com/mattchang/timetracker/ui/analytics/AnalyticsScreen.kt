@@ -249,11 +249,15 @@ fun AnalyticsScreen(
             // ── Group summary cards ───────────────────────────────────────
             if (uiState.groupSummary.isNotEmpty()) {
                 item {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         uiState.groupSummary.forEach { group ->
                             GroupSummaryCard(
                                 group = group,
-                                showDailyAvg = uiState.periodType != PeriodType.DAY
+                                showDailyAvg = uiState.periodType != PeriodType.DAY,
+                                modifier = Modifier.weight(1f)
                             )
                         }
                     }
@@ -383,30 +387,27 @@ private fun GroupSummaryCard(
     showDailyAvg: Boolean,
     modifier: Modifier = Modifier
 ) {
-    ElevatedCard(modifier = modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+    ElevatedCard(modifier = modifier) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
                 text = group.label,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Column(horizontalAlignment = Alignment.End) {
+            Text(
+                text = formatMinutes(group.totalMinutes),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            if (showDailyAvg) {
                 Text(
-                    text = formatMinutes(group.totalMinutes),
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
+                    text = "日均 ${formatMinutes(group.dailyAvgMinutes.toInt())}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                if (showDailyAvg) {
-                    Text(
-                        text = "日均 ${formatMinutes(group.dailyAvgMinutes.toInt())}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
             }
         }
     }
