@@ -78,7 +78,7 @@ data class AnalyticsUiState(
 private val CATEGORY_GROUPS = listOf(
     "工作" to setOf("工作", "開會"),
     "家庭" to setOf("家務", "小孩事務", "陪老婆", "陪小孩玩"),
-    "個人專案" to setOf("Side Project")
+    "個人專案" to setOf("SideProject")
 )
 
 @HiltViewModel
