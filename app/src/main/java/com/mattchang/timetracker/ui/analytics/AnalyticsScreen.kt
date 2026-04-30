@@ -133,6 +133,20 @@ fun AnalyticsScreen(
                 }
             }
         } else {
+            // ── Group summary cards ───────────────────────────────────────
+            if (uiState.groupSummary.isNotEmpty()) {
+                item {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        uiState.groupSummary.forEach { group ->
+                            GroupSummaryCard(
+                                group = group,
+                                showDailyAvg = uiState.periodType != PeriodType.DAY
+                            )
+                        }
+                    }
+                }
+            }
+
             // ── Donut chart + legend ──────────────────────────────────────
             if (uiState.categorySummary.isNotEmpty()) {
                 item {
@@ -361,6 +375,41 @@ private fun SectionCard(title: String, content: @Composable () -> Unit) {
             )
             Spacer(Modifier.height(12.dp))
             content()
+        }
+    }
+}
+
+@Composable
+private fun GroupSummaryCard(
+    group: GroupSummaryUi,
+    showDailyAvg: Boolean,
+    modifier: Modifier = Modifier
+) {
+    ElevatedCard(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = group.label,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = formatMinutes(group.totalMinutes),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                if (showDailyAvg) {
+                    Text(
+                        text = "日均 ${formatMinutes(group.dailyAvgMinutes.toInt())}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
         }
     }
 }

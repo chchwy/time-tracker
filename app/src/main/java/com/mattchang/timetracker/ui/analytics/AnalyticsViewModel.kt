@@ -54,6 +54,12 @@ data class BookReadEntryUi(
     val lastReadDate: java.time.LocalDate
 )
 
+data class GroupSummaryUi(
+    val label: String,
+    val totalMinutes: Int,
+    val dailyAvgMinutes: Float
+)
+
 data class AnalyticsUiState(
     val periodType: PeriodType = PeriodType.WEEK,
     val periodLabel: String = "",
@@ -62,11 +68,18 @@ data class AnalyticsUiState(
     val totalTrackedMinutes: Int = 0,
     val elapsedMinutes: Int = 0,
     val dailyAvgMinutes: Float = 0f,
+    val groupSummary: List<GroupSummaryUi> = emptyList(),
     val sleepAnalytics: SleepAnalyticsUi? = null,
     val booksRead: List<BookReadEntryUi> = emptyList()
 )
 
 // ─── ViewModel ────────────────────────────────────────────────────────────────
+
+private val CATEGORY_GROUPS = listOf(
+    "工作" to setOf("工作", "開會"),
+    "家庭" to setOf("家務", "小孩事務", "陪老婆", "陪小孩玩"),
+    "個人專案" to setOf("Side Project")
+)
 
 @HiltViewModel
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -245,6 +258,17 @@ class AnalyticsViewModel @Inject constructor(
         }
         val dailyAvg = if (elapsedDayCount > 0) effectiveTracked.toFloat() / elapsedDayCount else 0f
 
+        val groupSummary = CATEGORY_GROUPS.map { (label, names) ->
+            val total = minutesByCatId.entries
+                .filter { (catId, _) -> catMap[catId]?.name in names }
+                .sumOf { it.value }
+            GroupSummaryUi(
+                label = label,
+                totalMinutes = total,
+                dailyAvgMinutes = if (elapsedDayCount > 0) total.toFloat() / elapsedDayCount else 0f
+            )
+        }
+
         AnalyticsUiState(
             periodType = type,
             periodLabel = buildPeriodLabel(type, from, to),
@@ -253,6 +277,7 @@ class AnalyticsViewModel @Inject constructor(
             totalTrackedMinutes = effectiveTracked,
             elapsedMinutes = elapsedMinutes,
             dailyAvgMinutes = dailyAvg,
+            groupSummary = groupSummary,
             sleepAnalytics = computeSleepAnalytics(periodSleep),
             booksRead = booksRead
         )
