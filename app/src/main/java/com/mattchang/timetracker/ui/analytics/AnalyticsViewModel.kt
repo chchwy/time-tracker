@@ -231,7 +231,19 @@ class AnalyticsViewModel @Inject constructor(
             .sortedByDescending { it.lastReadDate }
 
         val effectiveTracked = totalTracked + overnightMinutes
-        val dailyAvg = if (dayCount > 0) effectiveTracked.toFloat() / dayCount else 0f
+        val elapsedDayCount = when (type) {
+            PeriodType.DAY -> 1
+            else -> {
+                var day = from
+                var count = 0
+                while (day.isBefore(to)) {
+                    if (!day.isAfter(today)) count++
+                    day = day.plusDays(1)
+                }
+                count.coerceAtLeast(1)
+            }
+        }
+        val dailyAvg = if (elapsedDayCount > 0) effectiveTracked.toFloat() / elapsedDayCount else 0f
 
         AnalyticsUiState(
             periodType = type,
