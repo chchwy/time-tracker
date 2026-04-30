@@ -397,16 +397,22 @@ private fun GroupSummaryCard(
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Text(
-                text = formatMinutes(group.totalMinutes),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
             if (showDailyAvg) {
                 Text(
-                    text = "日均 ${formatMinutes(group.dailyAvgMinutes.toInt())}",
+                    text = formatMinutes(group.dailyAvgMinutes.toInt()),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "累積 ${formatMinutes(group.totalMinutes)}",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                Text(
+                    text = formatMinutes(group.totalMinutes),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
