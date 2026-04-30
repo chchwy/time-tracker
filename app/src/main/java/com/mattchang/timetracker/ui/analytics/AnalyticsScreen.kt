@@ -399,7 +399,7 @@ private fun GroupSummaryCard(
             )
             if (showDailyAvg) {
                 Text(
-                    text = formatMinutes(group.dailyAvgMinutes.toInt()),
+                    text = "日均 ${formatMinutes(group.dailyAvgMinutes.toInt())}",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
