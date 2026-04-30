@@ -247,27 +247,6 @@ fun AnalyticsScreen(
             }
 
             // ── Summary cards (week / month only) ────────────────────────
-            if (uiState.periodType != PeriodType.DAY) {
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        SummaryCard(
-                            label = stringResource(R.string.total_tracked),
-                            value = formatMinutes(uiState.totalTrackedMinutes),
-                            icon = Icons.Default.BarChart,
-                            modifier = Modifier.weight(1f)
-                        )
-                        SummaryCard(
-                            label = stringResource(R.string.daily_avg),
-                            value = formatMinutes(uiState.dailyAvgMinutes.toInt()),
-                            icon = Icons.Default.Coffee,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
-            }
 
             // ── Sleep analytics ───────────────────────────────────────────
             uiState.sleepAnalytics?.let { sleep ->
