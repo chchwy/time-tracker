@@ -133,20 +133,6 @@ fun AnalyticsScreen(
                 }
             }
         } else {
-            // ── Group summary cards ───────────────────────────────────────
-            if (uiState.groupSummary.isNotEmpty()) {
-                item {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        uiState.groupSummary.forEach { group ->
-                            GroupSummaryCard(
-                                group = group,
-                                showDailyAvg = uiState.periodType != PeriodType.DAY
-                            )
-                        }
-                    }
-                }
-            }
-
             // ── Donut chart + legend ──────────────────────────────────────
             if (uiState.categorySummary.isNotEmpty()) {
                 item {
@@ -260,7 +246,19 @@ fun AnalyticsScreen(
                 }
             }
 
-            // ── Summary cards (week / month only) ────────────────────────
+            // ── Group summary cards ───────────────────────────────────────
+            if (uiState.groupSummary.isNotEmpty()) {
+                item {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        uiState.groupSummary.forEach { group ->
+                            GroupSummaryCard(
+                                group = group,
+                                showDailyAvg = uiState.periodType != PeriodType.DAY
+                            )
+                        }
+                    }
+                }
+            }
 
             // ── Sleep analytics ───────────────────────────────────────────
             uiState.sleepAnalytics?.let { sleep ->
